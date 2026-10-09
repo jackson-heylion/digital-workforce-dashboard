@@ -105,7 +105,7 @@ ALERT_RESOLVED
 | `dw_employee` | 数字员工目录 | `id` PK, `code` UNIQUE, `name`, `scenario_id`, `business_dept_id`, `build_dept_id`, `owner_id`, `version`, `lifecycle`, `connection_status`, `verified_at` |
 | `dw_task` | 业务工作单 | `id`, `employee_id`, `source_system`, `source_task_id`, `task_type`, `status`, `accepted_at`, `terminal_at`, `parent_task_id`; UNIQUE (`source_system`, `source_task_id`) |
 | `dw_run` | 执行尝试 | `id`, `task_id`, `attempt_no`, `status`, `started_at`, `ended_at`, `trace_id`; UNIQUE (`task_id`, `attempt_no`) |
-| `dw_event_inbox` | 原始事件与幂等 | `id`, `source_system`, `source_event_id`, `event_type`, `occurred_at`, `received_at`, `payload_json`, `process_status`; UNIQUE (`source_system`, `source_event_id`) |
+| `dw_step` | 执行步骤/外部调用 | `id`, `run_id`, `step_type`, `status`, `started_at`, `ended_at`, `trace_id`, `external_ref`, `error_code`；关联 Run，可按需归档 |\n| `dw_intervention` | 人工协作记录 | `id`, `task_id`, `review_type`, `requested_at`, `resolved_at`, `result`, `actor_ref`；避免把待审批计为终态失败 |\n| `dw_event_inbox` | 原始事件与幂等 | `id`, `source_system`, `source_event_id`, `event_type`, `occurred_at`, `received_at`, `payload_json`, `process_status`; UNIQUE (`source_system`, `source_event_id`) |
 | `dw_usage` | 消耗/成本账本 | `usage_id` UNIQUE, `run_id`, `provider`, `quantity`, `unit`, `price_version`, `amount`, `currency`, `settlement_status` |
 | `dw_metric_baseline` | 工时基线与审定 | `employee_id`, `task_type`, `version`, `sample_size`, `manual_seconds`, `review_seconds`, `approved_by`, `effective_from` |
 | `dw_alert` / `dw_alert_action` | 告警状态/处置 | 告警去重键、原因、状态、责任人、处理动作与审计 |
