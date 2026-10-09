@@ -2,6 +2,10 @@
 
 > **规范建议 v0.1**：所有指标均需产品负责人 + 业务 Owner + 数据/财务负责人共同确认后再用于集团汇报。原型静态数字不纳入本规范的真实统计。
 
+## 0. 管理层优先的补充约束（2026-10-09）
+
+首期已确认**集团管理层优先**。指标展示优先顺序建议：已核验上线数、业务任务完成数、已核验释放工时、运行总成本；业务成功率和采集覆盖度作为可信度/质量副栏。详见 [06 页面与指标](06-management-dashboard.md)。此排序不是批准使用未经审定的工时或成本数据；无数据必须显示 `null/UNAVAILABLE`，不要展示成 0。
+
 ## 1. 统一维度与计算边界
 
 每次查询都明确：
@@ -80,7 +84,7 @@
 
 ## 5. 建议的标准事件类型
 
-``text
+```text
 TASK_ACCEPTED
 RUN_STARTED
 STEP_FINISHED
@@ -94,7 +98,7 @@ USAGE_RECORDED
 EMPLOYEE_HEARTBEAT
 ALERT_RAISED
 ALERT_RESOLVED
-``
+```
 
 建议先实现严格状态转移表：新建 → 执行中 → 等待人工 / 重试 → 成功 / 失败 / 取消。业务回执迟到、任务重开、结果更正需单独补偿/冲正事件而不是直接改原始日志。
 
@@ -105,7 +109,9 @@ ALERT_RESOLVED
 | `dw_employee` | 数字员工目录 | `id` PK, `code` UNIQUE, `name`, `scenario_id`, `business_dept_id`, `build_dept_id`, `owner_id`, `version`, `lifecycle`, `connection_status`, `verified_at` |
 | `dw_task` | 业务工作单 | `id`, `employee_id`, `source_system`, `source_task_id`, `task_type`, `status`, `accepted_at`, `terminal_at`, `parent_task_id`; UNIQUE (`source_system`, `source_task_id`) |
 | `dw_run` | 执行尝试 | `id`, `task_id`, `attempt_no`, `status`, `started_at`, `ended_at`, `trace_id`; UNIQUE (`task_id`, `attempt_no`) |
-| `dw_step` | 执行步骤/外部调用 | `id`, `run_id`, `step_type`, `status`, `started_at`, `ended_at`, `trace_id`, `external_ref`, `error_code`；关联 Run，可按需归档 |\n| `dw_intervention` | 人工协作记录 | `id`, `task_id`, `review_type`, `requested_at`, `resolved_at`, `result`, `actor_ref`；避免把待审批计为终态失败 |\n| `dw_event_inbox` | 原始事件与幂等 | `id`, `source_system`, `source_event_id`, `event_type`, `occurred_at`, `received_at`, `payload_json`, `process_status`; UNIQUE (`source_system`, `source_event_id`) |
+| `dw_step` | 执行步骤/外部调用 | `id`, `run_id`, `step_type`, `status`, `started_at`, `ended_at`, `trace_id`, `external_ref`, `error_code`；关联 Run，可按需归档 |
+| `dw_intervention` | 人工协作记录 | `id`, `task_id`, `review_type`, `requested_at`, `resolved_at`, `result`, `actor_ref`；避免把待审批计为终态失败 |
+| `dw_event_inbox` | 原始事件与幂等 | `id`, `source_system`, `source_event_id`, `event_type`, `occurred_at`, `received_at`, `payload_json`, `process_status`; UNIQUE (`source_system`, `source_event_id`) |
 | `dw_usage` | 消耗/成本账本 | `usage_id` UNIQUE, `run_id`, `provider`, `quantity`, `unit`, `price_version`, `amount`, `currency`, `settlement_status` |
 | `dw_metric_baseline` | 工时基线与审定 | `employee_id`, `task_type`, `version`, `sample_size`, `manual_seconds`, `review_seconds`, `approved_by`, `effective_from` |
 | `dw_alert` / `dw_alert_action` | 告警状态/处置 | 告警去重键、原因、状态、责任人、处理动作与审计 |
@@ -115,6 +121,8 @@ ALERT_RESOLVED
 所有表应包含适用的租户字段与创建/更新时间；用授权层限制数据查询范围。以上是逻辑模型，不是已验收的生产 DDL。物理主键类型、索引和分区随事件量确定。
 
 ## 7. 对外 API 轮廓（待冻结）
+
+管理层主接口必须返回业务期间、`as_of`、`reconciled_through`、数据覆盖及逐指标质量标签。事件源验证不自动等同财务收益已批准。详见 [07 的接口示例](07-executive-data-architecture.md)。
 
 ```http
 POST   /api/v1/ingest/events            # 服务账号签名 + 幂等；支持单条或批量
