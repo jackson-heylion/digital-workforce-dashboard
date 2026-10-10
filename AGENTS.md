@@ -3,6 +3,7 @@
 ## Confirmed user decisions (source of truth)
 
 1. **Audience:** first release prioritizes the group management team (2026-10-09).
+1a. **LATEST CONFIRMED SCOPE (2026-10-10): Agent registration + Agent Run/log collection + dashboard display ONLY.** See [docs/17-agent-log-dashboard-mvp.md](docs/17-agent-log-dashboard-mvp.md). More complex business outcome tracking, Capability/Binding administration, approval workflows, financial baseline/ROI and generic Connector management are deferred.
 2. **UI delivery:** use the uploaded complete HTML prototype to **directly restore the existing page layout and interactions**, not invent a redesigned page (2026-10-10).
 3. The exact original is at **`prototype/index.html`** (Git blob `92d6df5d024a665cb88fcff9724fcb8ac1787225`). Treat this file as immutable visual/interaction baseline. **Do not edit or overwrite it.**
 4. **Confirmed front-end stack (2026-10-10): Vue 3 + TypeScript + Vite**, implementing a faithful 1:1 reproduction in a new `frontend/` directory. This decision is documented in [ADR-001](docs/10-frontend-adr.md). No working frontend project exists yet.
@@ -10,7 +11,7 @@
 
 ## Implementation workflow
 
-Work through GitHub Issues #2–#11 (FE-00–FE-09). FE-00 creates the scaffold; parallelize FE-01 Shell and FE-06 Demo Provider, then page reconstruction, tests and demo build. Do not state that build or tests pass until actually run.
+UI-F0 prototype faithful reproduction remains FE-00–FE-08 (GitHub Issues #2–#10). UI-F1 FE-09 (#11) now only reads Agent registration and Run technical metrics from the API. Minimal back-end tasks are #12 (Agent CRUD), #13 (Agent Run ingestion), #14 (dashboard aggregates). Do not implement retired business-Task/Outcome, complex governance and ROI specs from old docs. Do not state build or tests pass until actually run.
 
 ## Scope of UI-F0
 
@@ -26,13 +27,15 @@ Refer to the actual DOM/CSS/JS rather than relying solely on written design summ
 - Keep production metrics separated from demo data; never report mock counts, costs, success rates or “real employees” as verified production facts.
 - The origin has a remote ECharts CDN dependency; document any local bundling substitutions that preserve visuals.
 
-## Architecture constraints for later phases
+## Minimal MVP data and architecture
 
-- Treat a business Task as the counting unit, separate from Run, Step, LLM and tool calls.
-- Final business success requires source-system evidence, not a generated Agent reply.
-- Dashboard is an observability/value layer, not a replacement Agent orchestrator or approval engine.
-- Prefer a simple modular service and trustworthy metric snapshots over decorative real-time updates; technology choices remain draft, see `docs/03-architecture.md` and `docs/07-executive-data-architecture.md`.
-- Enforce authentication, data scope, auditability and sensitive-information handling before production connectivity.
+- **Registered Agent = one digital employee card.** One source Agent ID + platform + environment maps to a unique internal Agent; one Agent has many Runs.
+- **Run is a technical execution**, not a unique business Task and not proof of final business success. Count unique `(agent_id, source_run_id)` and calculate technical success rate on completed SUCCEEDED/FAILED Runs only.
+- Prefer authenticated HTTP post of Run summaries plus an optional simple read-only adapter when needed; do not build a generic connector platform or business Outcome ledger.
+- Recommend a minimal Agent CRUD, Run ingestion/log query, dashboard aggregation API in one service with MySQL; these back-end implementation choices remain proposals.
+- Keep the source HTML immutable, UI-F0 visually faithful; in UI-F1 replace fake business costs/saved hours with meaningful Agent Run/latency/error statistics **in the same visual positions**.
+- Production never runs demo tickers or backfills mock figures. Authenticate ingestion and reads, redact errors; do not persist raw prompts, personally identifying information or credentials.
+- Source of truth for MVP scope: [docs/17-agent-log-dashboard-mvp.md](docs/17-agent-log-dashboard-mvp.md); for Run metrics: [docs/04-metrics-and-contracts.md](docs/04-metrics-and-contracts.md).
 
 ## Repository publicity
 
