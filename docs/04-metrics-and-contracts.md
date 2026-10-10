@@ -18,6 +18,7 @@
 | 名称 | 数学定义 | 统计时间 | 缺值规则 |
 | --- | --- | --- | --- |
 | **Agent 总数（A01 已确认方案 A）** | **全部未归档的已登记 Agent 计数**（启用/暂停/停用均包含；部署副本和版本升级不增加人数）；具体去重 ID/跨环境粒度仍待确认 | Agent 登记当前状态；不按 Run 是否活跃筛选 | 无登记可自然得到 0；前端副标题真实在用数按 A02 另议 |
+| **真实在用数（A02 已确认方案 A）** | 仅统计登记记录中由负责人/管理员**主动认定「已正式投入使用」**的 Agent；**近期有无 Run 不影响认定**。暂停/停用/TEST/归档处理等边界仍待确认 | Agent 登记使用状态；不能从 enabled 或 Run activity 自动推断 | 无明确认定不得自动纳入；正式状态枚举/权限/显示细则尚待确认 |
 | Run 执行次数 | 时间窗内 `COUNT(DISTINCT agent_id, source_run_id)` | 推荐 started_at；缺时间时须声明回退口径 | 无源接入与已接入真实 0 分开 |
 | 已结束 Run 数 | `SUCCEEDED + FAILED + CANCELLED` | finished_at | 无终态为 0 |
 | 技术成功率 | `SUCCEEDED / (SUCCEEDED + FAILED)` | finished_at，同一时间窗 | 分母为 0 → null，不输出 100% |
