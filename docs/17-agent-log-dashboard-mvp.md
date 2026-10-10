@@ -8,6 +8,14 @@
 >
 > 本文件中的具体日志字段、API 命名、数据库表和技术实现属于**建议落地细节**，不是用户逐项签署的技术决策；真正的源 Agent 平台接口可用性仍需接入前验证。
 
+## 0. 日志采集方式已确认（2026-10-10）
+
+项目发起人已确认：**在 Agent 调用处增加一个简单的统一上报接口**，不以 Agent 平台只读拉取作为首期默认方案。
+
+**v1 契约**：`POST /api/v1/ingest/agent-runs`，服务端 Bearer 验证，入参包括 `schema_version/agent_code/run_id/status/started_at`，终态强制 `finished_at`，耗时/Token/错误/trace 可选；同一 Run 允许开始/终态更新但不得重复计数。完整协议与调用例子见 [18](18-agent-run-reporting-standard.md)，机器可读规范见 [OpenAPI](../openapi/agent-run-reporting-v1.json)。
+
+**调用策略**：仅终态一次上报即可；可选前置 RUNNING；上报失败有界重试、不得导致原 Agent 业务失败。上报的是**Run 技术日志**，非业务系统最终结果。
+
 ## 1. 只做三件事
 
 | 功能 | 用户操作 | 首期最小能力 |
@@ -75,15 +83,14 @@ flowchart LR
   E --> F["Vue 看板"]
 ```
 
-**首选方式建议**：Agent 运行完成时由调用方通过 **HTTP POST** 上报一条 Run 摘要；需要查看步骤错误时，可额外上报简短分级日志。已有平台没有主动上报能力时，**再做一个只读拉取适配器**，不用首期开发通用 Connector 管理框架。
+**已确认方式**：由 Agent 调用方/统一 Gateway 包装层在运行结束时通过 **标准 HTTP POST** 上报 Run 摘要；可选先上报 RUNNING。严格使用 [18 上报标准](18-agent-run-reporting-standard.md)。阶段内不开发自动拉取适配器或通用 Connector 管理框架；若个别调用端确实无法加埋点，再另行评估例外。
 
 ### 最小 Run 记录示例（虚构的 DEMO 数据）
 
 ```json
 {
-  "platform": "BAILIAN",
-  "external_agent_id": "agent-demo-001",
-  "environment": "PROD",
+  "schema_version": "1.0",
+  "agent_code": "agent-demo-001",
   "run_id": "run-demo-1001",
   "status": "SUCCEEDED",
   "started_at": "2026-10-10T08:10:00+08:00",
@@ -106,7 +113,7 @@ flowchart LR
 - 最近活跃 = 最大有效 `finished_at/started_at`，只代表**最后可观测活动**。
 - 延迟 = 服务接收时间 `received_at` 与源发生时间之差；需要防止极端时间偏移影响排序。
 
-**最少也要保留**：`agent_id`, `run_id`, `status`, `started_at` 或 `finished_at` 中可信的一项，`received_at`, `source_platform`。同一 Agent + 源 Run ID 的多次上报只存一个运行记录，必要时允许合法状态更新；不同 Agent 的 Run ID 即使相同也不合并。
+**当前上报契约**必须包含 `schema_version/agent_code/run_id/status/started_at`，终态再包含 `finished_at`；`received_at` 在服务器生成。具体校验见 [18](18-agent-run-reporting-standard.md)。同一 Agent + 源 Run ID 的多次上报只存一个运行记录，必要时允许合法状态更新；不同 Agent 的 Run ID 即使相同也不合并。
 
 ### 数据安全与稳定性（避免过度工程化）
 
