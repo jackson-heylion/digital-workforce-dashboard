@@ -38,7 +38,7 @@
 | 技术失败次数 | `COUNT(status=FAILED)` | finished_at | 分母不是成功率计算依据 |
 | 平均执行耗时 | `AVG(duration_ms)`，仅有效已完成/失败且有 duration 的 Run | finished_at | 无有效样本 → null |
 | Token 消耗（可选） | Sum(input_tokens + output_tokens) | 归属 Run，明确计量来源 | 未提供不显示 |
-| **B03 Token 模型推理估算成本（能力已明确，整体 KPI 待批准）** | **真实模型用量 × 带版本号和生效期的对应模型费率**；同 Run 可能多次/多模型调用，需先按模型请求分别计价再汇总。费用质量标记 `ESTIMATED`，真实出账 `BILLED` 另存，不得与估算当成已结算总额 | 使用调用侧真实 Token usage、模型 ID/计费区域/缓存明细及价格规则；仅使用当前 v1 input/output Run 汇总无法普遍准确计价；建议方案见 [22](22-token-pricing-cost-design.md) | **已明确必须支持 Token 计价**；计价源/价格管理、选用哪种扩展接口、汇总日期/币种/缺失/覆盖率、展示、账单对齐及 B04/B08 复用仍待确认；不可默认为 0 或原型 ¥308 |
+| **B03 P0 单次 Run Token/模型/估算成本（记录内容已确认，整体 KPI 未定）** | **P0 按一个 Agent Run 保存实际 `input_tokens`、`output_tokens`、模型计费标识及本次模型估算成本**；费用基于 Token × 对应有效单价，且计价版本需可追溯，不采用原型固定每 Run 单价 | v1 已有可选 `input_tokens/output_tokens`；模型 ID、估算费用金额、币种与价格版本等是**待定义协议的候选字段**；用户已批准 P0 记录范围但未批准 v1 直接扩字段/字段必填/精度，详见 [22](22-token-pricing-cost-design.md) | **跨多模型/不同缓存费率无法套单一 Run 费率时不强行估算**；估算标 `ESTIMATED` 非已出账；价格表/币种/缺失/展示/日界及 B04/B08/C08 仍待确认 |
 
 **执行次数并非业务任务完成数，技术成功率并非业务成功率**。重复上报同一 Run，不增加执行次数；真实重试生成新的源 Run ID，按新的执行次数计入。
 
