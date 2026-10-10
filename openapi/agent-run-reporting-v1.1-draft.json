@@ -1,0 +1,690 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Digital Workforce Dashboard - Agent Run Reporting API v1.1 (draft)",
+    "version": "1.1.0-draft",
+    "description": "Draft additive extension of v1.0 for prototype coverage, NOT a deployed service nor approved production schema. Same endpoint accepts explicit schema_version=1.0 OR 1.1, dispatches by version; 1.0 remains strict and unchanged. Agent Run is technical execution, not business outcome."
+  },
+  "servers": [
+    {
+      "url": "https://dashboard.example.invalid",
+      "description": "Placeholder ONLY; deploy behind approved internal HTTPS endpoint."
+    }
+  ],
+  "paths": {
+    "/api/v1/ingest/agent-runs": {
+      "post": {
+        "operationId": "reportAgentRun",
+        "summary": "Create/update one Agent Run snapshot (v1.0 or v1.1, DRAFT)",
+        "description": "DRAFT: Same URL preserves v1.0 and adds optional v1.1 fields for logs/cost/human intervention/scenario measurements. Exact 1.0 body remains validated by strict v1.0 schema. Input fields never become proof of business outcome. Durably commit before 200. Idempotent (agent registration scope,run_id); immutable facts and conflicting terminal statuses return 409. Cost and metric aggregation must respect quality, source, currency and metric definition. Duplicate versions for same Run may add optional metadata only under explicit enrichment rules; no terminal or immutable fact overwrite.",
+        "security": [
+          {
+            "ingestBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunReport"
+              },
+              "examples": {
+                "success": {
+                  "summary": "Successful technical Run",
+                  "value": {
+                    "schema_version": "1.0",
+                    "agent_code": "dish-adjuster-demo",
+                    "run_id": "run-20261010-0001",
+                    "status": "SUCCEEDED",
+                    "started_at": "2026-10-10T08:10:00+08:00",
+                    "finished_at": "2026-10-10T08:10:04+08:00",
+                    "duration_ms": 4000,
+                    "input_tokens": 680,
+                    "output_tokens": 180,
+                    "trace_id": "trace-demo-0001"
+                  }
+                },
+                "started": {
+                  "summary": "Optional in-progress report",
+                  "value": {
+                    "schema_version": "1.0",
+                    "agent_code": "dish-adjuster-demo",
+                    "run_id": "run-20261010-0001",
+                    "status": "RUNNING",
+                    "started_at": "2026-10-10T08:10:00+08:00"
+                  }
+                },
+                "failed": {
+                  "summary": "Failed technical Run",
+                  "value": {
+                    "schema_version": "1.0",
+                    "agent_code": "dish-adjuster-demo",
+                    "run_id": "run-20261010-0002",
+                    "status": "FAILED",
+                    "started_at": "2026-10-10T08:20:00+08:00",
+                    "finished_at": "2026-10-10T08:20:02+08:00",
+                    "duration_ms": 2000,
+                    "error_code": "AGENT_TIMEOUT",
+                    "error_message": "Agent execution timed out",
+                    "trace_id": "trace-demo-0002"
+                  }
+                },
+                "v11_success": {
+                  "summary": "Extended v1.1 report with safe summary and observed metrics (fictional)",
+                  "value": {
+                    "schema_version": "1.1",
+                    "agent_code": "procurement-agent-demo",
+                    "run_id": "run-20261010-0003",
+                    "status": "SUCCEEDED",
+                    "started_at": "2026-10-10T09:00:00+08:00",
+                    "finished_at": "2026-10-10T09:00:09+08:00",
+                    "duration_ms": 9000,
+                    "operation_type": "report_generation",
+                    "summary": "Completed procurement report",
+                    "manual_intervention_count": 0,
+                    "input_tokens": 1500,
+                    "output_tokens": 900,
+                    "cost": {
+                      "amount": "0.034500",
+                      "currency": "CNY",
+                      "quality": "ESTIMATED",
+                      "source": "RATE_CARD",
+                      "basis_id": "model-price-2026q4-v1"
+                    },
+                    "measurements": [
+                      {
+                        "code": "reports_generated",
+                        "value": "1",
+                        "unit": "REPORT",
+                        "quality": "SOURCE_REPORTED"
+                      }
+                    ],
+                    "trace_id": "trace-demo-0003"
+                  }
+                },
+                "v11_manual": {
+                  "summary": "Extended v1.1 report with observed human intervention and no cost information (fictional)",
+                  "value": {
+                    "schema_version": "1.1",
+                    "agent_code": "audit-agent-demo",
+                    "run_id": "run-20261010-0004",
+                    "status": "SUCCEEDED",
+                    "started_at": "2026-10-10T09:10:00+08:00",
+                    "finished_at": "2026-10-10T09:11:00+08:00",
+                    "operation_type": "schedule_generation",
+                    "summary": "Produced draft schedule pending downstream approval",
+                    "manual_intervention_count": 1,
+                    "manual_handling_ms": 12000,
+                    "correlation_id": "request-demo-120"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably stored or idempotently ignored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunReportAck"
+                },
+                "example": {
+                  "agent_code": "dish-adjuster-demo",
+                  "run_id": "run-20261010-0001",
+                  "result": "CREATED",
+                  "received_at": "2026-10-10T08:10:04+08:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON or Content-Type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized for Agent/environment"
+          },
+          "404": {
+            "description": "Registered Agent not found"
+          },
+          "409": {
+            "description": "Conflicting terminal status or immutable metadata"
+          },
+          "413": {
+            "description": "Request body exceeds 16 KiB"
+          },
+          "422": {
+            "description": "Schema or timestamp validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited; retry using Retry-After"
+          },
+          "500": {
+            "description": "Transient internal error"
+          },
+          "503": {
+            "description": "Service temporarily unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ingestBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Service credential scoped to selected Agent registrations and environment."
+      }
+    },
+    "schemas": {
+      "RunReportAck": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "agent_code",
+          "run_id",
+          "result",
+          "received_at"
+        ],
+        "properties": {
+          "agent_code": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "UPDATED",
+              "DUPLICATE",
+              "IGNORED_STALE"
+            ]
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "request_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "RunReportV1": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "agent_code",
+          "run_id",
+          "status",
+          "started_at"
+        ],
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "1.0"
+          },
+          "agent_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Stable local Agent registry code; bearer principal must be authorized for it."
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Unique within registered Agent; HTTP retries reuse this ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "description": "Technical Run status; not final business outcome."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "RFC3339 with timezone offset, required even in terminal-only report."
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Required for terminal statuses and must be >= started_at."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "error_message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Sanitized short diagnostic; never raw prompt, response or PII."
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "RUNNING"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "finished_at"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "SUCCEEDED",
+                    "FAILED",
+                    "CANCELLED"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "finished_at"
+              ]
+            }
+          }
+        ]
+      },
+      "RunReportV11": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "agent_code",
+          "run_id",
+          "status",
+          "started_at"
+        ],
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "1.1"
+          },
+          "agent_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Stable local Agent registry code; bearer principal must be authorized for it."
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Unique within registered Agent; HTTP retries reuse this ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "description": "Technical Run status; not final business outcome."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "RFC3339 with timezone offset, required even in terminal-only report."
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Required for terminal statuses and must be >= started_at."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "error_message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Sanitized short diagnostic; never raw prompt, response or PII."
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "operation_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "description": "Registered operation code (e.g. report_generation), not arbitrary natural language."
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Sanitized human-readable one-line action summary; not prompt, response or business-sensitive content."
+          },
+          "manual_intervention_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Explicitly observed count for this Run; absence means UNKNOWN, not zero."
+          },
+          "manual_handling_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Explicitly observed human ACTIVE handling time; excludes passive approval wait; omit if unknown."
+          },
+          "correlation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Optional group of separate attempts for technical retry/recovery analysis. Does not prove source business outcome."
+          },
+          "cost": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "amount",
+              "currency",
+              "quality",
+              "source"
+            ],
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,6})?$",
+                "description": "Nonnegative finite decimal encoded as string (never binary floating point). At most 6 fractional digits."
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "description": "ISO 4217 currency code; separate currencies must never be summed without governed FX conversion."
+              },
+              "quality": {
+                "type": "string",
+                "enum": [
+                  "BILLED",
+                  "ESTIMATED"
+                ],
+                "description": "BILLED means source has a real billing record; ESTIMATED requires basis_id."
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "PROVIDER_BILL",
+                  "SOURCE_METER",
+                  "RATE_CARD"
+                ],
+                "description": "Origin of amount, not a proof of business savings."
+              },
+              "basis_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+                "description": "Required for ESTIMATED, points to versioned estimation policy or rate card."
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "quality": {
+                      "const": "ESTIMATED"
+                    }
+                  },
+                  "required": [
+                    "quality"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "basis_id"
+                  ]
+                }
+              }
+            ]
+          },
+          "measurements": {
+            "type": "array",
+            "maxItems": 10,
+            "uniqueItems": true,
+            "description": "Optional registered per-Run numerical scenario measurements; metric codes must be allowlisted, and code uniqueness validated server-side. No unbounded user attributes.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "code",
+                "value",
+                "unit",
+                "quality"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                  "description": "Must match pre-registered per-Agent metric definition and aggregation rule."
+                },
+                "value": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,6})?$",
+                  "description": "Nonnegative finite decimal encoded as string (never binary floating point). At most 6 fractional digits."
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "COUNT",
+                    "ITEM",
+                    "REPORT",
+                    "STORE",
+                    "MINUTE",
+                    "MILLISECOND"
+                  ]
+                },
+                "quality": {
+                  "type": "string",
+                  "enum": [
+                    "SOURCE_REPORTED",
+                    "ESTIMATED"
+                  ],
+                  "description": "SOURCE_REPORTED = claimed by caller, not independently verified against business system."
+                },
+                "basis_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "description": "Estimation rule/version reference; required for ESTIMATED."
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "quality": {
+                        "const": "ESTIMATED"
+                      }
+                    },
+                    "required": [
+                      "quality"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "basis_id"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "RUNNING"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "finished_at"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "SUCCEEDED",
+                    "FAILED",
+                    "CANCELLED"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "finished_at"
+              ]
+            }
+          }
+        ],
+        "description": "All original v1.0 fields keep their existing semantics. Added fields are OPTIONAL. For this draft, v1.1 clients must send schema_version 1.1; v1.0 clients remain unchanged."
+      },
+      "RunReport": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RunReportV1"
+          },
+          {
+            "$ref": "#/components/schemas/RunReportV11"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "schema_version",
+          "mapping": {
+            "1.0": "#/components/schemas/RunReportV1",
+            "1.1": "#/components/schemas/RunReportV11"
+          }
+        }
+      }
+    }
+  }
+}
