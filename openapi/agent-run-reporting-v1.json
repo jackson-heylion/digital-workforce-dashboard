@@ -1,0 +1,336 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Digital Workforce Dashboard - Agent Run Reporting API",
+    "version": "1.0.0",
+    "description": "MVP technical Agent Run reporting, not proof of final business outcomes."
+  },
+  "servers": [
+    {
+      "url": "https://dashboard.example.invalid",
+      "description": "Placeholder ONLY; deploy behind approved internal HTTPS endpoint."
+    }
+  ],
+  "paths": {
+    "/api/v1/ingest/agent-runs": {
+      "post": {
+        "operationId": "reportAgentRun",
+        "summary": "Create or update one Agent Run snapshot",
+        "description": "Authenticated, idempotent technical Run report. End-only reports are valid; optional RUNNING state supports live monitoring. 200 means durable commit; a terminal Run never reverts. Identity and environment derived and checked from caller plus agent_code. 429/5xx can be retried with bounded exponential backoff.",
+        "security": [
+          {
+            "ingestBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunReport"
+              },
+              "examples": {
+                "success": {
+                  "summary": "Successful technical Run",
+                  "value": {
+                    "schema_version": "1.0",
+                    "agent_code": "dish-adjuster-demo",
+                    "run_id": "run-20261010-0001",
+                    "status": "SUCCEEDED",
+                    "started_at": "2026-10-10T08:10:00+08:00",
+                    "finished_at": "2026-10-10T08:10:04+08:00",
+                    "duration_ms": 4000,
+                    "input_tokens": 680,
+                    "output_tokens": 180,
+                    "trace_id": "trace-demo-0001"
+                  }
+                },
+                "started": {
+                  "summary": "Optional in-progress report",
+                  "value": {
+                    "schema_version": "1.0",
+                    "agent_code": "dish-adjuster-demo",
+                    "run_id": "run-20261010-0001",
+                    "status": "RUNNING",
+                    "started_at": "2026-10-10T08:10:00+08:00"
+                  }
+                },
+                "failed": {
+                  "summary": "Failed technical Run",
+                  "value": {
+                    "schema_version": "1.0",
+                    "agent_code": "dish-adjuster-demo",
+                    "run_id": "run-20261010-0002",
+                    "status": "FAILED",
+                    "started_at": "2026-10-10T08:20:00+08:00",
+                    "finished_at": "2026-10-10T08:20:02+08:00",
+                    "duration_ms": 2000,
+                    "error_code": "AGENT_TIMEOUT",
+                    "error_message": "Agent execution timed out",
+                    "trace_id": "trace-demo-0002"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably stored or idempotently ignored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunReportAck"
+                },
+                "example": {
+                  "agent_code": "dish-adjuster-demo",
+                  "run_id": "run-20261010-0001",
+                  "result": "CREATED",
+                  "received_at": "2026-10-10T08:10:04+08:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON or Content-Type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Not authorized for Agent/environment"
+          },
+          "404": {
+            "description": "Registered Agent not found"
+          },
+          "409": {
+            "description": "Conflicting terminal status or immutable metadata"
+          },
+          "413": {
+            "description": "Request body exceeds 16 KiB"
+          },
+          "422": {
+            "description": "Schema or timestamp validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited; retry using Retry-After"
+          },
+          "500": {
+            "description": "Transient internal error"
+          },
+          "503": {
+            "description": "Service temporarily unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ingestBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Service credential scoped to selected Agent registrations and environment."
+      }
+    },
+    "schemas": {
+      "RunReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "agent_code",
+          "run_id",
+          "status",
+          "started_at"
+        ],
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "enum": [
+              "1.0"
+            ]
+          },
+          "agent_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Stable local Agent registry code; bearer principal must be authorized for it."
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "description": "Unique within registered Agent; HTTP retries reuse this ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "SUCCEEDED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "description": "Technical Run status; not final business outcome."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "RFC3339 with timezone offset, required even in terminal-only report."
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Required for terminal statuses and must be >= started_at."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "error_message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Sanitized short diagnostic; never raw prompt, response or PII."
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "RUNNING"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "finished_at"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "SUCCEEDED",
+                    "FAILED",
+                    "CANCELLED"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "finished_at"
+              ]
+            }
+          }
+        ]
+      },
+      "RunReportAck": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "agent_code",
+          "run_id",
+          "result",
+          "received_at"
+        ],
+        "properties": {
+          "agent_code": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "UPDATED",
+              "DUPLICATE",
+              "IGNORED_STALE"
+            ]
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "request_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
