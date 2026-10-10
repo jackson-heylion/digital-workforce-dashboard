@@ -6,6 +6,7 @@
 
 ## 最新确认：调用处上报 Run 日志
 
+- **[19 · 原型全量指标/采集覆盖审计](docs/19-prototype-metrics-coverage-audit.md)**：完整清点四页指标、场景统计、演示口径及 v1 缺失字段。**上报协议升级前应先核对该审计**。
 - **[18 · Agent Run 上报标准 v1.0](docs/18-agent-run-reporting-standard.md)**：`POST /api/v1/ingest/agent-runs`、字段校验、Bearer 权限、状态转换、幂等、重试、调用方埋点与验收。
 - [OpenAPI 3.1 机器可读接口契约](openapi/agent-run-reporting-v1.json)：便于客户端/服务端对照，规范已入库；**尚无已运行的接口实现**。
 - 调用方**结束时上报一次终态即可**，要显示“执行中”再使用同一个 `run_id` 上报 RUNNING；上报失败不应影响 Agent 原业务调用。
@@ -61,7 +62,8 @@
 | 文档 | 状态与用途 |
 | --- | --- |
 | [17 当前 MVP](docs/17-agent-log-dashboard-mvp.md) | **当前范围最高优先级** |
-| [18 Run 上报标准](docs/18-agent-run-reporting-standard.md) / [OpenAPI](openapi/agent-run-reporting-v1.json) | **已确认调用侧上报方式**；标准字段、状态、鉴权与幂等契约 |
+| [18 Run 上报标准](docs/18-agent-run-reporting-standard.md) / [OpenAPI](openapi/agent-run-reporting-v1.json) | **已确认调用侧上报方式**；v1 仅覆盖 Run 基础状态/耗时/usage |
+| [19 原型全量指标审计](docs/19-prototype-metrics-coverage-audit.md) | **最新指标缺口分析**；成本、工时、人工介入、异常恢复和场景指标仍需明确来源 |
 | [10 前端 ADR](docs/10-frontend-adr.md) | 已确认 Vue 3 + TS + Vite |
 | [08 UI 基准](docs/08-ui-reproduction.md) / [12 交互](docs/12-frontend-interactions.md) / [13 测试](docs/13-ui-acceptance.md) | UI-F0 原型还原参考；UI-F1 部分旧的业务核验要求需按 17 修订 |
 | [11 开发清单](docs/11-frontend-backlog.md) / [05 决策及里程碑](docs/05-roadmap-and-decisions.md) | 当前与后续任务 |
