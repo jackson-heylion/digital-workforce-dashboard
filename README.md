@@ -58,6 +58,7 @@
 | [验收测试与 CI 门禁](docs/13-ui-acceptance.md) | 五个 viewport、截图回归、Playwright/Vitest 用例和 UI-F0/UI-F1 DoD |
 | [数字员工资产管理中心（讨论）](docs/14-employee-management.md) | 数字员工定义、业务能力、资源绑定、生命周期、Owner、上岗核验与授权 |
 | [多源数据接入与治理（讨论）](docs/15-data-integration.md) | Connector、源身份映射、Task/Run/Outcome、接入健康、对账与五场景来源矩阵 |
+| [五场景数据源盘点表](docs/16-source-inventory.md) | 尚待源 Owner 核实的任务 ID、业务回执、接入方式、费用/基线和权限 |
 
 ## 关键约束
 
