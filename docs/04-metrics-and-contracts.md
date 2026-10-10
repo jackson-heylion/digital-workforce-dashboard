@@ -1,5 +1,7 @@
 # 04｜Agent Run 指标与日志契约（极简 MVP）
 
+> **产品口径审批约束（2026-10-10）**：用户要求每个指标和字段的展示、计算、来源与标准都逐项讨论确认。请查阅 [21 · 指标字段待确认台账](21-metrics-field-confirmation-register.md)。本文件中的 KPI 公式只是此前研发建议，**不能视为逐项已获用户确认的产品口径**。
+
 > **Run 上报标准 v1**：[18 人类可读规范](18-agent-run-reporting-standard.md) | [OpenAPI](../openapi/agent-run-reporting-v1.json)。该标准是最新接入契约。
 >
 > 最新范围以 [17](17-agent-log-dashboard-mvp.md) 为准：**只登记 Agent、采集 Run 日志、展示技术运营指标**。下列字段/公式是建议版本 v0.2；接入时必须按真实平台数据验证。**不再要求源业务最终回执、独立业务 Task、工时与 ROI 核验。**
