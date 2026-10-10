@@ -38,6 +38,7 @@
 | 技术失败次数 | `COUNT(status=FAILED)` | finished_at | 分母不是成功率计算依据 |
 | 平均执行耗时 | `AVG(duration_ms)`，仅有效已完成/失败且有 duration 的 Run | finished_at | 无有效样本 → null |
 | Token 消耗（可选） | Sum(input_tokens + output_tokens) | 归属 Run，明确计量来源 | 未提供不显示 |
+| **B03 Token 模型推理估算成本（能力已明确，整体 KPI 待批准）** | **真实模型用量 × 带版本号和生效期的对应模型费率**；同 Run 可能多次/多模型调用，需先按模型请求分别计价再汇总。费用质量标记 `ESTIMATED`，真实出账 `BILLED` 另存，不得与估算当成已结算总额 | 使用调用侧真实 Token usage、模型 ID/计费区域/缓存明细及价格规则；仅使用当前 v1 input/output Run 汇总无法普遍准确计价；建议方案见 [22](22-token-pricing-cost-design.md) | **已明确必须支持 Token 计价**；计价源/价格管理、选用哪种扩展接口、汇总日期/币种/缺失/覆盖率、展示、账单对齐及 B04/B08 复用仍待确认；不可默认为 0 或原型 ¥308 |
 
 **执行次数并非业务任务完成数，技术成功率并非业务成功率**。重复上报同一 Run，不增加执行次数；真实重试生成新的源 Run ID，按新的执行次数计入。
 
