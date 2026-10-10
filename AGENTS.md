@@ -5,7 +5,12 @@
 1. **Audience:** first release prioritizes the group management team (2026-10-09).
 2. **UI delivery:** use the uploaded complete HTML prototype to **directly restore the existing page layout and interactions**, not invent a redesigned page (2026-10-10).
 3. The exact original is at **`prototype/index.html`** (Git blob `92d6df5d024a665cb88fcff9724fcb8ac1787225`). Treat this file as immutable visual/interaction baseline. **Do not edit or overwrite it.**
-4. Start with UI-F0 (1:1 reproduction), then UI-F1 (real backend/data), then UI-F2 (optional management-oriented rearrangement after explicit approval). See [UI specification](docs/08-ui-reproduction.md) and [frontend/data engineering plan](docs/09-frontend-data-implementation.md); Vue 3 is **recommended, not yet explicitly approved**.
+4. **Confirmed front-end stack (2026-10-10): Vue 3 + TypeScript + Vite**, implementing a faithful 1:1 reproduction in a new `frontend/` directory. This decision is documented in [ADR-001](docs/10-frontend-adr.md). No working frontend project exists yet.
+5. Start with UI-F0 (1:1 reproduction), then UI-F1 (real backend/data), then UI-F2 (optional management-oriented rearrangement after explicit approval). See [UI specification](docs/08-ui-reproduction.md), [frontend project plan](docs/11-frontend-backlog.md), [interaction contract](docs/12-frontend-interactions.md), and [acceptance standards](docs/13-ui-acceptance.md).
+
+## Implementation workflow
+
+Work through GitHub Issues #2–#11 (FE-00–FE-09). FE-00 creates the scaffold; parallelize FE-01 Shell and FE-06 Demo Provider, then page reconstruction, tests and demo build. Do not state that build or tests pass until actually run.
 
 ## Scope of UI-F0
 
