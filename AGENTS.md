@@ -28,6 +28,15 @@ Refer to the actual DOM/CSS/JS rather than relying solely on written design summ
 - Keep production metrics separated from demo data; never report mock counts, costs, success rates or “real employees” as verified production facts.
 - The origin has a remote ECharts CDN dependency; document any local bundling substitutions that preserve visuals.
 
+## Protocol review and nonfunctional design (2026-10-10)
+
+- Original v1.0 API remains at `openapi/agent-run-reporting-v1.json`, immutable in meaning, deployed nowhere so far.
+- Read [docs/19-prototype-metrics-coverage-audit.md](docs/19-prototype-metrics-coverage-audit.md) before claiming any metric can be computed. The original has synthetic costs, savings, intervention and alert recovery.
+- [docs/20-performance-extensibility-portability.md](docs/20-performance-extensibility-portability.md) is a recommended performance/scalability/portability architecture, **not benchmark results**.
+- `openapi/agent-run-reporting-v1.1-draft.json` is a **draft** extension only, NOT an approved deployed schema. It adds optional operation_type, sanitized summary, manually observed interventions, cost with quality/source, correlation ID and bounded registered measurements. Keep existing v1 clients supported through strict schema version dispatch.
+- For data quality, never infer business result from technical SUCCEEDED; never infer saved hours from Run duration; never use missing count/cost/intervention as zero. Costs require currency, decimal, provenance and billing vs estimate separation.
+- Start with authenticated durable commit to MySQL, transaction-guarded `(agent_id,run_id)` idempotency, indexed pagination and query aggregation. Add daily snapshots/queues/OLAP only on measured bottlenecks; support migrations and platform-neutral fields.
+
 ## Minimal MVP data and architecture
 
 - **Registered Agent = one digital employee card.** One source Agent ID + platform + environment maps to a unique internal Agent; one Agent has many Runs.
