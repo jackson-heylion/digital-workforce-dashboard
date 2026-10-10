@@ -10,7 +10,7 @@
 
 **UI-F0（本轮计划）**：构建可独立运行的 Vue Demo，视觉/交互忠实复刻附件；九名员工与五个场景为演示数据，不连接生产。验收包括四页、六图、全部导航、上传预览、告警演示及多视口截图。
 
-**UI-F1（下一阶段）**：同一组件通过 Production Provider 接入业务回执、IAM、数据质量、真实成本/工时与服务端工作流/告警。无核验数据不能冒充生产值。
+**UI-F1（下一阶段，已收缩）**：同一组件通过正式 Provider 接入**登记 Agent + Agent Run 日志 + 技术指标**，不接业务回执、成本工时、告警写入。参见 [17 最新 MVP](17-agent-log-dashboard-mvp.md)。
 
 **UI-F2（需要单独确认）**：管理层 KPI 重排、月报、部门贡献布局、ROI 等优化，不影响 UI-F0 已确认的页面基准。
 
@@ -130,7 +130,7 @@ digital-workforce-dashboard/
 | FE-05 | [#8](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/8) | UI-F0 / P0 | 监控、告警演示、执行流水 | FE-01、FE-06 | M |
 | FE-07 | [#9](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/9) | UI-F0 / P0 | Playwright/Vitest、跨视口截图、CI 质量门禁 | FE-01～FE-06 | L |
 | FE-08 | [#10](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/10) | UI-F0 / P0 | Demo 构建预览、README、差异说明、验收材料 | FE-07 | S |
-| FE-09 | [#11](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/11) | UI-F1 / P1 | Production Provider、数据核验、权限与写操作边界 | FE-07、业务接入确认 | L |
+| FE-09 | [#11](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/11) | UI-F1 / P1 | **正式 Agent 目录/Run 日志/技术指标 Provider** | FE-07、BE-A/BE-B/BE-C | M |
 
 **排序说明**：FE-06 是编号较靠后但可在 FE-01 期间并行执行的**基础数据任务**；不要误以为需要做完 FE-05 才能开始它。FE-02/03/04/05 视开发资源可并行。最关键的完成顺序为：
 
@@ -152,6 +152,14 @@ flowchart TD
   H --> J["FE-09 生产 Provider（后续）"]
 ```
 
+## 4.1 极简后端配套任务（2026-10-10 新增）
+
+- [BE-A #12](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/12)：Agent 登记 CRUD 与基本权限。
+- [BE-B #13](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/13)：单 Agent Run 日志鉴权上报、幂等与分页查询。
+- [BE-C #14](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/14)：Run 技术指标聚合、趋势和排行。
+
+它们建议在一个轻量后端服务实现。**不建复杂 Connector、业务 Task/Outcome 账本和财务工时对账**。
+
 ## 5. 里程碑定义（建议按可交付物，而非不确定日历）
 
 | 里程碑 | 结束条件 | 涉及 Issue |
@@ -160,7 +168,7 @@ flowchart TD
 | M1 公共框架/数据可用 | 公共样式、路由、Demo 数据服务可演示 | #3、#4 |
 | M2 四页功能复刻 | 总览、详情、五场景、监控交互齐全 | #5、#6、#7、#8 |
 | M3 UI-F0 可验收 | 所有 viewport 截图、交互测试与质量门禁通过；Demo 可独立访问 | #9、#10 |
-| M4 UI-F1 正式数据 | 业务回执可信、数据质量标识、权限隔离与告警审计通过 | #11（需另立后端任务） |
+| M4 UI-F1 正式数据 | Agent CRUD/Run 日志采集和看板查询贯通，真实 Run 统计、技术成功率和平均耗时与明细一致；Demo 隔离 | #11～#14 |
 
 ## 6. 建议每个 PR 的完成定义
 
@@ -173,7 +181,7 @@ flowchart TD
 
 ## 7. 尚未确认、不能偷换成已批准
 
-- 生产后端、微服务或 OLAP 方案、真实任务口径、源业务回执与数据可访问性；
+- 生产后端选型、第一批 Agent 来源、Run ID/状态/时间戳字段与实际日志 API 可访问性；**不再以业务回执/工时 ROI 作为 MVP 条件**；
 - 是否允许公开 GitHub Pages / 采用内部预览；不批准则暂在本地/授权环境预览；
 - 管理驾驶舱四张新 KPI 的页面改版（原型 UI-F0 仍维持现有四卡）；
 - 是否新增部门独立页、筛选器、报告导出、复杂告警管理等非原型页面；
