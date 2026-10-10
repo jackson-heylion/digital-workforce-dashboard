@@ -472,7 +472,7 @@
           "manual_intervention_count": {
             "type": "integer",
             "minimum": 0,
-            "description": "Explicitly observed count for this Run; absence means UNKNOWN, not zero."
+            "description": "Explicitly observed count for this Run; absence means UNKNOWN, not zero. The dashboard denominator must include only terminal Runs with this field present, and must show reporting coverage. Missing means unknown, not zero."
           },
           "manual_handling_ms": {
             "type": "integer",
@@ -548,6 +548,25 @@
                     "basis_id"
                   ]
                 }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "quality": {
+                      "const": "BILLED"
+                    }
+                  },
+                  "required": [
+                    "quality"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "source": {
+                      "const": "PROVIDER_BILL"
+                    }
+                  }
+                }
               }
             ]
           },
@@ -555,7 +574,7 @@
             "type": "array",
             "maxItems": 10,
             "uniqueItems": true,
-            "description": "Optional registered per-Run numerical scenario measurements; metric codes must be allowlisted, and code uniqueness validated server-side. No unbounded user attributes.",
+            "description": "Optional registered per-Run numerical scenario measurements; metric codes must be allowlisted, and code uniqueness validated server-side. No unbounded user attributes. A repeated code in the same Run (even if values differ) is rejected with 422; JSON Schema uniqueItems alone cannot enforce key-level uniqueness.",
             "items": {
               "type": "object",
               "additionalProperties": false,
