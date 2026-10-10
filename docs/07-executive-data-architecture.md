@@ -1,5 +1,8 @@
 # 07｜管理层优先的技术取舍、汇总接口与数据验真
 
+> **历史方案，已退出 2026-10-10 确认的 MVP 范围。** 用户明确要求系统只做**Agent 登记、Agent Run 日志采集、看板展示**；本文关于业务 Task/Outcome、Connector 管理、审批/能力绑定、财务工时/ROI、五场景源业务对账或管理层 KPI 重排的建议**均不可当成本期开发需求或验收项**。请以 [17 最新 MVP 规格](17-agent-log-dashboard-mvp.md) 为准；原始 HTML 的 UI-F0 视觉复刻仍保持。
+
+
 > **已确认**：产品受众首期“集团管理层优先”；首轮 UI 必须依照 [原始 HTML](../prototype/index.html) **1:1 还原布局与交互**。以下数据架构及时效目标仍为建议，可在 UI-F1 时接入；本文件的管理层查询/刷新取舍不能覆盖 UI-F0 视觉基准。详见 [08 UI 还原规范](08-ui-reproduction.md)。
 >
 > 以 [管理层页面设计](06-management-dashboard.md)、[总体技术架构](03-architecture.md)、[指标字典](04-metrics-and-contracts.md) 为前置。
