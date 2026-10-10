@@ -88,7 +88,7 @@
 | UI-F1 | **接数据、修真实性** | 将静态员工和任务记录迁移 Demo Provider，接正式 API，增加真实/估算/未接入标记 | 擅自用前端模拟数据伪装生产；不经确认对整页重新排版 |
 | UI-F2 | **管理层优先增量优化** | 经确认后调整 KPI 优先级、增加可信度、部门/场景贡献、报表下钻 | 未经评审就删除原型内容、将页面改成完全不同的“大屏驾驶舱” |
 
-这样统一上一轮的“集团管理层优先”与本轮的“直接还原页面布局”：**先复刻原型外观是最新明确指令**，指标改进是后续增量需求。
+这样统一上一轮的“集团管理层优先”与本轮的“直接还原页面布局”：**原型外观除已取消的场景演示外继续复刻**，指标改进是后续增量需求。
 
 ## 4. 建议前端实现拆分（仅代码结构，不更改页面）
 
@@ -100,7 +100,6 @@ frontend/
     layouts/DashboardShell.vue        # topbar + nav + main
     pages/OverviewPage.vue            # p0
     pages/EmployeeDetailPage.vue      # p11
-    （不创建 ScenarioDemoPage.vue；p7 已取消）
     pages/MonitoringPage.vue           # p4
     components/
       KpiCard.vue
