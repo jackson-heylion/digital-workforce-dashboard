@@ -13,7 +13,8 @@
 | **D13** | **在 Agent 调用处增加统一 HTTP 上报接口** | 用户，2026-10-10 | 遵循 [18 Agent Run 标准 v1](18-agent-run-reporting-standard.md)，不用先建平台日志拉取或通用连接器 |
 | **D14（要求）** | **考虑性能、可扩展性、可迁移性，并覆盖更多原型指标** | 用户，2026-10-10 | [19 原型审计](19-prototype-metrics-coverage-audit.md) + [20 非功能设计](20-performance-extensibility-portability.md)；[v1.1 扩展协议](../openapi/agent-run-reporting-v1.1-draft.json)仍是待评审草案 |
 | **D15** | **每个指标/字段按展示、计算、来源、标准逐项讨论确认** | 用户，2026-10-10 | [21 逐项确认台账](21-metrics-field-confirmation-register.md)，未确认不进入生产指标定稿 |
-| **D16 · A01** | **数字员工总数选择方案 A：所有未归档已登记 Agent（包含启用/暂停/停用），部署副本与版本升级不重复计数** | 用户，2026-10-10 | [21 指标确认台账](21-metrics-field-confirmation-register.md)；A02 真实在用数尚待确认 |
+| **D16 · A01** | **数字员工总数选择方案 A：所有未归档已登记 Agent（包含启用/暂停/停用），部署副本与版本升级不重复计数** | 用户，2026-10-10 | [21 指标确认台账](21-metrics-field-confirmation-register.md)；A02 另有认定方式已确认，但边界仍待讨论 |
+| **D17 · A02** | **真实在用选择方案 A：Agent 负责人或管理员登记标记「正式投入使用」，不通过最近 Run 自动认定** | 用户，2026-10-10 | [21 指标确认台账](21-metrics-field-confirmation-register.md)；暂停/停用/环境、状态枚举/审批等仍待确认；A03 部门归属下一项 |
 
 **范围解释建议**：一 Agent 登记 = 一数字员工卡；执行一次 = 一条唯一 Agent Run；Run 成功 ≠ 业务成功。这个简化口径可在获取第一批真实日志样本后做字段级细化。
 
