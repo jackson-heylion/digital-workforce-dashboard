@@ -17,7 +17,7 @@
 
 | 名称 | 数学定义 | 统计时间 | 缺值规则 |
 | --- | --- | --- | --- |
-| Agent 总数 | `COUNT(dw_agent)`（明确是否只包含 enabled） | 当前登记状态 | 无登记为真实 0 |
+| **Agent 总数（A01 已确认方案 A）** | **全部未归档的已登记 Agent 计数**（启用/暂停/停用均包含；部署副本和版本升级不增加人数）；具体去重 ID/跨环境粒度仍待确认 | Agent 登记当前状态；不按 Run 是否活跃筛选 | 无登记可自然得到 0；前端副标题真实在用数按 A02 另议 |
 | Run 执行次数 | 时间窗内 `COUNT(DISTINCT agent_id, source_run_id)` | 推荐 started_at；缺时间时须声明回退口径 | 无源接入与已接入真实 0 分开 |
 | 已结束 Run 数 | `SUCCEEDED + FAILED + CANCELLED` | finished_at | 无终态为 0 |
 | 技术成功率 | `SUCCEEDED / (SUCCEEDED + FAILED)` | finished_at，同一时间窗 | 分母为 0 → null，不输出 100% |
