@@ -1,18 +1,16 @@
 # 03｜MVP 技术架构：Agent 登记 + Run 日志 + 看板
 
-> **已确认业务范围**：[17 极简 Agent 日志看板](17-agent-log-dashboard-mvp.md)。Vue 3 + TS + Vite 已确认；**Spring Boot/MySQL 和具体接口均是推荐实施选型，未作生产部署承诺**。原复杂业务 Task、Connector、对账方案退出 MVP。
+> **已确认业务范围**：[17 极简 Agent 日志看板](17-agent-log-dashboard-mvp.md)。Vue 3 + TS + Vite 已确认；**Spring Boot/MySQL 和具体接口均是推荐实施选型，未作生产部署承诺**。原复杂业务 Task、Connector、对账方案退出 MVP。**调用方 HTTP 上报已确认**，详细字段以 [18](18-agent-run-reporting-standard.md) / [OpenAPI](../openapi/agent-run-reporting-v1.json) 为准。
 
 ## 1. 极简架构
 
 ```mermaid
 flowchart LR
- A["现有 Agent / 调用方"] --> B["上报 Run 摘要 HTTP API"]
+ A["现有 Agent / 调用方"] --> B["调用包装层 POST Run 摘要"]
  B --> C["一个后端应用"]
  C --> DB[("MySQL: dw_agent / dw_agent_run / 可选 dw_agent_log")]
  C --> Q["Agent CRUD / 日志查询 / 看板聚合 API"]
  Q --> UI["Vue 3 + TypeScript + Vite + ECharts"]
- A -. "只提供查询日志时" .-> P["单源只读适配"]
- P --> B
 ```
 
 **重点**：不改造现有 Agent 执行引擎，不做 Agent 编排、业务审批、领域系统状态整合；没有需要先建微服务、Kafka、Flink、Doris 或多租户通用管控平台的证据。
@@ -49,7 +47,7 @@ GET   /api/v1/agents                    # 查询 Agent
 POST  /api/v1/agents                    # 新增登记
 GET   /api/v1/agents/{id}               # Agent 详情
 PATCH /api/v1/agents/{id}               # 编辑/启停
-POST  /api/v1/ingest/agent-runs         # 上报 Run 摘要；调用方身份认证
+POST  /api/v1/ingest/agent-runs         # 已确认：调用层上报 Run 快照（标准 v1）
 POST  /api/v1/ingest/agent-logs         # 可选分级日志
 GET   /api/v1/agents/{id}/runs          # Run 分页/筛选
 GET   /api/v1/dashboard/overview        # 总数、Run、成功率、平均耗时
@@ -57,7 +55,7 @@ GET   /api/v1/dashboard/trends          # 日维度 Run/失败/耗时
 GET   /api/v1/dashboard/rankings        # Agent Run 排行
 ```
 
-实际接口路径/字段由第一批源 Agent 日志 schema 再冻结。
+该接口路径和标准 v1 字段现已记录在 [18](18-agent-run-reporting-standard.md) 与 [OpenAPI](../openapi/agent-run-reporting-v1.json)；接收服务尚未实现。源平台适配层负责按标准映射。
 
 ## 5. 最小可靠性和安全性
 
@@ -67,7 +65,7 @@ GET   /api/v1/dashboard/rankings        # Agent Run 排行
 4. **读权限**：集团/部门授权查看所需范围，源 Agent 日志和异常不能在公共静态站点暴露；尽量复用现有身份体系。
 5. **数据质量**：`enabled` 与最近实际日志时间分开；采集间断不自动断言 Agent 已宕机。页面展示最近收到时间。
 6. **环境隔离**：TEST/PROD Run 不混算；DEMO 数据不写到正式业务表。
-7. **后续可演进**：源平台不能主动上报时写针对性简单拉取任务即可，不必引入通用 Connector 管理后台。
+7. **采集方式**：在已有 Agent 调用边界增加最小 reporter，结束时上报终态即可；可选 RUNNING。失败有界重试、不影响原业务；首期不开发拉取任务或通用 Connector。
 
 ## 6. 与原型的关系
 
@@ -75,4 +73,4 @@ GET   /api/v1/dashboard/rankings        # Agent Run 排行
 
 ## 7. 待接入源验证
 
-尚不清楚第一批 Agent 在百炼、Dify、自研服务或其他平台运行，是否已有稳定 Run ID 和标准日志接口。接入前应拿到真实但脱敏的 Run 样本、状态定义、日志字段和鉴权能力；无需启动业务结果回执/财务基线的大型调研。
+**调用处上报的集成方案已确认**。仍需在具体调用方明确 Agent 身份、原平台 Run ID（没有则生成 UUID）、状态/时间/Token 字段映射和所需权限；不需要先调查平台是否有日志拉取 API，更不需要业务最终回执与财务基线。
