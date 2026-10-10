@@ -6,6 +6,10 @@
 
 面向集团已有的 AI Agent、Skill、自动化流程与规则引擎，提供**统一目录、业务任务可观测、效能核算、异常处置与治理**。不替代百炼、钉钉或各业务系统，也不要求把已有数字员工迁移到统一运行时。
 
+## 当前业务设计专题（待确认）
+
+在推进前端 FE-00/真实 API 前，建议先共同确认**数字员工的边界与登记方式**、**运行平台资源绑定**、**业务结果从哪些系统采集**及**效能/成本数据的签认权**。最新的 [14 管理中心](docs/14-employee-management.md) 与 [15 数据接入](docs/15-data-integration.md) 为讨论稿，**不意味着用户已批准管理表单、接口或数据源连通**。
+
 ## 已确认的方向与产品分层
 
 - **主入口：原型的“总览 · 数字员工 · 效能”**，先复刻原型布局；后续按集团管理层优先定位提升建设覆盖、业务交付、已核验工时、运行成本等内容的可信度。
@@ -52,6 +56,8 @@
 | [Vue 工程目录与开发 Backlog](docs/11-frontend-backlog.md) | 目标目录、开发任务 FE-00～09、GitHub Issue、依赖关系与里程碑 |
 | [Vue 页面交互契约](docs/12-frontend-interactions.md) | 页面/路由映射、员工详情、场景跳转、文件上传、告警及 Demo 状态 |
 | [验收测试与 CI 门禁](docs/13-ui-acceptance.md) | 五个 viewport、截图回归、Playwright/Vitest 用例和 UI-F0/UI-F1 DoD |
+| [数字员工资产管理中心（讨论）](docs/14-employee-management.md) | 数字员工定义、业务能力、资源绑定、生命周期、Owner、上岗核验与授权 |
+| [多源数据接入与治理（讨论）](docs/15-data-integration.md) | Connector、源身份映射、Task/Run/Outcome、接入健康、对账与五场景来源矩阵 |
 
 ## 关键约束
 
