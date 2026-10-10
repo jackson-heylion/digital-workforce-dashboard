@@ -48,6 +48,8 @@
 - FE-09 仅用于**正式 Agent 目录、Run 日志和看板数据 Provider**，不再连接业务 Outcome。
 - 后端任务单独创建最小 Agent CRUD、Run 采集和查询聚合 Issue，不在 MVP 扩展 Connector 管理后台。
 
+- [#15 非功能验证](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/15)：建议性能基准、并发幂等、协议版本兼容、跨平台/数据库迁移测试；仅是**待执行的验收任务**。
+
 ## 5. 非 MVP 旧版方案处理
 
 原 [14 员工管理](14-employee-management.md)、[15 多源接入](15-data-integration.md)、[16 五场景数据源盘点](16-source-inventory.md)、[06 管理层重排](06-management-dashboard.md)、[07 业务数据读模型](07-executive-data-architecture.md)保留为**历史扩展讨论**，不作为本期验收或后端工作项。后续若重新纳入功能，应由用户重新明确授权。
