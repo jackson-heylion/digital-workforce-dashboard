@@ -4,7 +4,7 @@
 
 1. **Audience:** first release prioritizes the group management team (2026-10-09).
 1a. **LATEST CONFIRMED SCOPE (2026-10-10): Agent registration + Agent Run/log collection + dashboard display ONLY.** See [docs/17-agent-log-dashboard-mvp.md](docs/17-agent-log-dashboard-mvp.md). More complex business outcome tracking, Capability/Binding administration, approval workflows, financial baseline/ROI and generic Connector management are deferred.
-2. **UI delivery:** use the uploaded complete HTML prototype to **directly restore the existing page layout and interactions**, not invent a redesigned page (2026-10-10).
+1b. **Confirmed ingestion choice:** Add a simple reporting POST at each Agent invocation boundary; see [Agent Run reporting standard v1](docs/18-agent-run-reporting-standard.md) and [OpenAPI](openapi/agent-run-reporting-v1.json). Do not default to building log-polling connectors.\n2. **UI delivery:** use the uploaded complete HTML prototype to **directly restore the existing page layout and interactions**, not invent a redesigned page (2026-10-10).
 3. The exact original is at **`prototype/index.html`** (Git blob `92d6df5d024a665cb88fcff9724fcb8ac1787225`). Treat this file as immutable visual/interaction baseline. **Do not edit or overwrite it.**
 4. **Confirmed front-end stack (2026-10-10): Vue 3 + TypeScript + Vite**, implementing a faithful 1:1 reproduction in a new `frontend/` directory. This decision is documented in [ADR-001](docs/10-frontend-adr.md). No working frontend project exists yet.
 5. Start with UI-F0 (1:1 reproduction), then UI-F1 (real backend/data), then UI-F2 (optional management-oriented rearrangement after explicit approval). See [UI specification](docs/08-ui-reproduction.md), [frontend project plan](docs/11-frontend-backlog.md), [interaction contract](docs/12-frontend-interactions.md), and [acceptance standards](docs/13-ui-acceptance.md).
@@ -31,7 +31,7 @@ Refer to the actual DOM/CSS/JS rather than relying solely on written design summ
 
 - **Registered Agent = one digital employee card.** One source Agent ID + platform + environment maps to a unique internal Agent; one Agent has many Runs.
 - **Run is a technical execution**, not a unique business Task and not proof of final business success. Count unique `(agent_id, source_run_id)` and calculate technical success rate on completed SUCCEEDED/FAILED Runs only.
-- Prefer authenticated HTTP post of Run summaries plus an optional simple read-only adapter when needed; do not build a generic connector platform or business Outcome ledger.
+- **Required v1 contract:** `POST /api/v1/ingest/agent-runs`, registered `agent_code`, stable `run_id`, `schema_version: 1.0`, `status`, `started_at`, `finished_at` for terminal, optional duration/usage/sanitized error; service bearer auth scoped to Agent/environment; 200 only after durable commit, no duplicate runs; no business outcome ledger. See docs/18 and OpenAPI as source of truth.
 - Recommend a minimal Agent CRUD, Run ingestion/log query, dashboard aggregation API in one service with MySQL; these back-end implementation choices remain proposals.
 - Keep the source HTML immutable, UI-F0 visually faithful; in UI-F1 replace fake business costs/saved hours with meaningful Agent Run/latency/error statistics **in the same visual positions**.
 - Production never runs demo tickers or backfills mock figures. Authenticate ingestion and reads, redact errors; do not persist raw prompts, personally identifying information or credentials.
