@@ -15,6 +15,8 @@
 
 ## 原型预览与页面还原（开发基准）
 
+> 自动化开发工具请先阅读根目录的 [AGENTS.md](AGENTS.md)，保证复刻原型时不擅自重排页面或覆盖源文件。
+
 - **[查看完整原始 HTML：prototype/index.html](prototype/index.html)**（附件逐字节原样上传，包含 CSS、ECharts、交互逻辑与演示数据）。
 - [原型说明和本地运行方式](prototype/README.md)｜[**1:1 UI 还原规范、验收清单**](docs/08-ui-reproduction.md)。
 - 本地运行：`python3 -m http.server 8000 --directory prototype`，访问 `http://localhost:8000/`。
