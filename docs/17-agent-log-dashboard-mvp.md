@@ -16,6 +16,8 @@
 
 **调用策略**：仅终态一次上报即可；可选前置 RUNNING；上报失败有界重试、不得导致原 Agent 业务失败。上报的是**Run 技术日志**，非业务系统最终结果。
 
+**本轮指标与非功能深化（待方案评审）**：原型全指标审计 [19](19-prototype-metrics-coverage-audit.md)、性能扩展迁移 [20](20-performance-extensibility-portability.md)、[v1.1 可选字段 OpenAPI 草案](../openapi/agent-run-reporting-v1.1-draft.json)。**v1.0 必填和含义保持不变，新增内容未视为已批准/已部署**；仍然仅做登记、上报和看板。
+
 ## 1. 只做三件事
 
 | 功能 | 用户操作 | 首期最小能力 |
