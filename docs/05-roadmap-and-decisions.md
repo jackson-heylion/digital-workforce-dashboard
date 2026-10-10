@@ -32,6 +32,7 @@
 | **D32 · B03-P0-01** | **选择方案 A：每次 Agent Run 的实际计费供应商与模型标识由调用侧报告，不根据 Agent 默认登记/版本/技术来源推断** | 用户，2026-10-10 | [22 Token 计价设计](22-token-pricing-cost-design.md)、[21 台账](21-metrics-field-confirmation-register.md)；供应商和模型编码/字段必填、协议版本、识别失败、别名、多模型与模型价格映射待定；**B03-P0-02 Token 来源/缺失方案 A 已确认，P0-03 成本计算责任方正在讨论**；v1/v1.1/HTML 不改 |
 | **D33 · B03-P0-02** | **选择方案 A：输入/输出 Token 均可选、非负整数，只接受调用侧 SDK/API 实际 Usage；缺失不补零、不拒收整个 Run，不凭字符数或推测 Token 冒充真实用量，缺少计价必需 Usage 时成本不可计算** | 用户，2026-10-10 | [22 Token 设计](22-token-pricing-cost-design.md)、[21 台账](21-metrics-field-confirmation-register.md)；供应商字段映射、流式/失败/取消、真实零校验、缓存/推理 Token、迟到补报/覆盖率/质量及协议版本继续待确认；P0-03 已选 B，下一项 P0-04 单价/价格版本，旧 v1/v1.1/HTML 不变 | 
 | **D34 · B03-P0-03** | **用户选择方案 B：每次 Run 的模型估算费用由调用方按实际 Usage 和适用模型单价计算，并随 Run 上报；服务端接收/校验/保存金额，不作为权威重新计价者** | 用户，2026-10-10 | [22 Token 设计](22-token-pricing-cost-design.md)、[21 决议](21-metrics-field-confirmation-register.md)；模型价格来源/维护权限、费率版本/生效、币种/精度、缓存/阶梯、缺失/补报/重算、接收端校验和 Schema 待确认；B03-P0-04 正在讨论，不改 v1/v1.1/HTML | 
+| **D35 · B03-P0-04** | **方案 A：各 Agent 调用方分别维护有来源/版本的模型单价快照，并在调用方自行计算单次 Run 的 ESTIMATED 模型费用后报送** | 用户，2026-10-10 | [22 Token 计价设计](22-token-pricing-cost-design.md)、[21 确认台账](21-metrics-field-confirmation-register.md)；未批准价格配置字段、审批权限、版本生效时点、币种/精度、缓存/阶梯、企业折扣、缺价/历史回算、单价展示和正式协议；**当前讨论 B03-P0-05 金额字段与兼容报文**；不改 v1/v1.1/原型 | 
 
 **范围解释建议**：一 Agent 登记 = 一数字员工卡；执行一次 = 一条唯一 Agent Run；Run 成功 ≠ 业务成功。这个简化口径可在获取第一批真实日志样本后做字段级细化。
 
