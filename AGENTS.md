@@ -28,6 +28,12 @@ Refer to the actual DOM/CSS/JS rather than relying solely on written design summ
 - Keep production metrics separated from demo data; never report mock counts, costs, success rates or “real employees” as verified production facts.
 - The origin has a remote ECharts CDN dependency; document any local bundling substitutions that preserve visuals.
 
+## REQUIRED: metric-by-metric product confirmation (2026-10-10)
+
+- Read [docs/21-metrics-field-confirmation-register.md](docs/21-metrics-field-confirmation-register.md) before changing metric/UI/event fields. The user explicitly requested a **discussion and explicit approval for EACH metric/field**: displayed name/unit/precision/empty-state; computation/time window/denominator; data producer/source; semantics/validation/quality standards.
+- **Every row in register 21 is UNCONFIRMED** until the user replies with a decision. Previous assistant proposals in docs/04, 17, 18, 19, 20 and OpenAPI drafts are not product approval. Do not mark confirmed or promote schema changes without user input.
+- Discuss sequentially in chat and write each accepted decision to the register with date and implications. Start with A01 (digital employee total), then A02 and related identity/state fields.
+
 ## Protocol review and nonfunctional design (2026-10-10)
 
 - Original v1.0 API remains at `openapi/agent-run-reporting-v1.json`, immutable in meaning, deployed nowhere so far.
