@@ -144,7 +144,7 @@ flowchart TD
   D --> G["FE-03 员工详情"]
   B --> G
   C --> G
-  D & E & F & G --> H["FE-07 E2E/截图/CI"]
+  D & F & G --> H["FE-07 E2E/截图/CI"]
   H --> I["FE-08 Demo 交付"]
   H --> J["FE-09 生产 Provider（后续）"]
 ```
