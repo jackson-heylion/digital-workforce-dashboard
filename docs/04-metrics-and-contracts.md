@@ -1,6 +1,6 @@
 # 04｜Agent Run 指标与日志契约（极简 MVP）
 
-> 最新范围以 [17](17-agent-log-dashboard-mvp.md) 为准：**只登记 Agent、采集 Run 日志、展示技术运营指标**。下列字段/公式是建议版本 v0.2；接入时必须按真实平台数据验证。**不再要求源业务最终回执、独立业务 Task、工时与 ROI 核验。**
+> **Run 上报标准 v1**：[18 人类可读规范](18-agent-run-reporting-standard.md) | [OpenAPI](../openapi/agent-run-reporting-v1.json)。该标准是最新接入契约。\n>\n> 最新范围以 [17](17-agent-log-dashboard-mvp.md) 为准：**只登记 Agent、采集 Run 日志、展示技术运营指标**。下列字段/公式是建议版本 v0.2；接入时必须按真实平台数据验证。**不再要求源业务最终回执、独立业务 Task、工时与 ROI 核验。**
 
 ## 1. 最小实体
 
@@ -27,10 +27,9 @@
 
 ```json
 {
-  "platform": "CUSTOM",
-  "environment": "TEST",
-  "external_agent_id": "agent-sample-01",
-  "source_run_id": "run-sample-0001",
+  "schema_version": "1.0",
+  "agent_code": "agent-sample-01",
+  "run_id": "run-sample-0001",
   "status": "SUCCEEDED",
   "started_at": "2026-10-10T08:02:00+08:00",
   "finished_at": "2026-10-10T08:02:03+08:00",
@@ -42,7 +41,7 @@
 }
 ```
 
-调用身份/令牌需要在 HTTP 授权信息中校验，不在事件体里放共享 Secret。事件体中的 `external_agent_id` 不应被当作可任意冒名上报的可信依据。
+调用身份/令牌通过服务端到服务端 `Authorization: Bearer` 校验，且应绑定授权 `agent_code`/环境，不能信任请求体自报身份。**服务端字段统一使用 `source_run_id` 存储，请求入参统一使用 `run_id`**；两者的映射由接收层完成。终态需要 `finished_at`，`started_at` 全状态必填；详见 [18](18-agent-run-reporting-standard.md)。
 
 ## 4. 状态与时间
 
