@@ -10,6 +10,8 @@
 
 ## 0. 日志采集方式已确认（2026-10-10）
 
+> **指标字段确认流程补充**：2026-10-10 用户已要求所有原型指标及采集字段的展示、计算、来源、标准**逐项讨论批准**；候选清单见 [21](21-metrics-field-confirmation-register.md)，不要将此文中的技术 KPI 示例视作已定指标。
+
 项目发起人已确认：**在 Agent 调用处增加一个简单的统一上报接口**，不以 Agent 平台只读拉取作为首期默认方案。
 
 **v1 契约**：`POST /api/v1/ingest/agent-runs`，服务端 Bearer 验证，入参包括 `schema_version/agent_code/run_id/status/started_at`，终态强制 `finished_at`，耗时/Token/错误/trace 可选；同一 Run 允许开始/终态更新但不得重复计数。完整协议与调用例子见 [18](18-agent-run-reporting-standard.md)，机器可读规范见 [OpenAPI](../openapi/agent-run-reporting-v1.json)。
