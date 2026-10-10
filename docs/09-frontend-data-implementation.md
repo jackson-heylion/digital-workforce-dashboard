@@ -1,3 +1,5 @@
+> **A10 最新用户裁决（2026-10-10）**：场景演示整体取消；以下原型拆解仅用于历史了解。新 Vue UI-F0/UI-F1 不建设 `p7`、`ScenarioDemoPage`、场景演示入口、五场景静态流程/绑定；只做 p0/p11/p4 三页，其余原型视觉继续参考，原始 HTML 不改。以 [21 决策台账](21-metrics-field-confirmation-register.md) 和 [17 MVP](17-agent-log-dashboard-mvp.md) 为准。
+
 # 09｜从 HTML 原型到管理层看板：前端架构与数据接入实施讨论
 
 > **历史方案，已退出 2026-10-10 确认的 MVP 范围。** 用户明确要求系统只做**Agent 登记、Agent Run 日志采集、看板展示**；本文关于业务 Task/Outcome、Connector 管理、审批/能力绑定、财务工时/ROI、五场景源业务对账或管理层 KPI 重排的建议**均不可当成本期开发需求或验收项**。请以 [17 最新 MVP 规格](17-agent-log-dashboard-mvp.md) 为准；原始 HTML 的 UI-F0 视觉复刻仍保持。
@@ -22,9 +24,9 @@
 
 | 原型细节 | 代码观察 | 工程化处理 |
 | --- | --- | --- |
-| 页面切换 | `showPage(id)` 控制 `.page.on`，四个页面 `p0 / p11 / p7 / p4`；二级页高亮 `p0` 导航 | Vue Router 4（或轻量状态路由）复刻；建议 URL 可直达员工详情与场景，而视觉表现不变 |
+| 页面切换 | `showPage(id)` 控制 `.page.on`，四个页面 `p0 / p11 / p7 / p4`；二级页高亮 `p0` 导航 | 新 Vue 只保留 p0/p11/p4 三页；可直达员工详情，场景路由已取消 |
 | 员工目录 | `emps` 内联 9 条数据，按信息/财务/采购/内审/运营部门分组 | 迁移到 `demoProvider.ts`，每人分配稳定 ID，避免按中文昵称连接多表 |
-| 场景演示 | 五段静态业务说明、流程图和锚点跳转 | 第一轮将既有 DOM 内容移到独立组件；P1 才由后台驱动业务文档 |
+| 场景演示 | 五段静态业务说明、流程图和锚点跳转 | **该功能已取消**，不移植 DOM，不建设独立组件或后台文档功能 |
 | 首页图表 | ECharts CDN 5.4.3，首页工时/场景排行固定数据，成本按 `runs×cost` 算示意数 | 首轮复用相同 ECharts 配置；正式模式必须按统计快照和真实成本账本计算 |
 | 个人趋势 | `genTrend(total)` 以固定月度权重拆出 9 个月数据 | 仅 Demo 允许；正式模式由 `GET timeseries` 返回每月事实 |
 | 执行动态 | `pushFeed` 每 6000ms 用本地列表循环生成日志、随机增加成本、执行次数 | 封装 `DemoTicker` 并在生产模式禁用；生产默认查询或低频刷新即可 |
@@ -69,7 +71,6 @@ frontend/
     layouts/DashboardShell.vue
     pages/OverviewPage.vue         # 原 p0
     pages/EmployeeDetailPage.vue   # 原 p11
-    pages/ScenarioDemoPage.vue     # 原 p7
     pages/MonitoringPage.vue       # 原 p4
     components/
       KpiCard.vue
@@ -77,7 +78,6 @@ frontend/
       EmployeeGroup.vue
       ChartPanel.vue
       ExecutionFeed.vue
-      ScenarioFlow.vue
       AlertList.vue
       WorkflowUploader.vue
     styles/
@@ -106,7 +106,7 @@ tests/
 1. `DashboardShell`：完整 topbar/nav/footer + `max-width:1280px`，保持页面几何形态；
 2. `OverviewPage`：四张原型 KPI、执行动态、员工分组、3 张图表，样式先固定；
 3. `EmployeeDetailPage`：个人数据联动、3 个详细趋势、文件预览；
-4. `ScenarioDemoPage`：五个标杆场景内容完整复刻与锚点；
+4. ~~`ScenarioDemoPage`：五个标杆场景内容完整复刻与锚点~~（**A10 已取消，禁止开发**）；
 5. `MonitoringPage`：告警及执行流水；
 6. `DashboardProvider` 抽象 + API 适配；最后再依据管理层反馈做 UI-F2。
 
@@ -180,7 +180,7 @@ interface DashboardProvider {
 ## 9. 推荐的最近一轮可交付验收
 
 **迭代 A · 视觉与交互复刻：**
-- 保证 `prototype/index.html` 不变，`frontend/` 独立构建，保留原型四页及五个场景；
+- 保证 `prototype/index.html` 不变，`frontend/` 独立构建，新 Vue 仅保留三页（总览/详情/监控），场景演示页及入口已取消；
 - 比对 1440/1280/768/390/375px 截图，固定与原型一致的数据/时间快照；
 - 通过导航、员工详情、图表加载与 resize、工作流本地预览、告警演示测试；
 - 即使未接后端，Demo 可独立部署和预览，明确显示“演示环境”。
