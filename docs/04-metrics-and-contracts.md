@@ -32,7 +32,8 @@
 | **B01 今日 Agent 技术执行次数（方案 A 已确认）** | **按 `started_at` 归属到启动日**，统计唯一 `(agent_id, source_run_id)` 的技术 Run；真实重新调用产生新 Run 可加次，HTTP 重传及同一 Run 状态更新不得加次；**不是业务 Task 完成量** | `started_at` 启动事件已确认；**日界时区、跨日边界、RUNNING/CANCELLED 纳入范围、迟到补数、测试环境仍待确认** | 实际 Run 来自 `dw_agent_run`；未接入/真实 0 及具体展示文案待确认，**B02 技术成功率尚未批准** |
 | Run 执行次数（通用参考，非独立批准 KPI） | 时间窗内 `COUNT(DISTINCT agent_id, source_run_id)` | B01 启动日归属已确认；其他 KPI 单独确认 | 无源接入与已接入真实 0 分开 |
 | 已结束 Run 数 | `SUCCEEDED + FAILED + CANCELLED` | finished_at | 无终态为 0 |
-| 技术成功率 | `SUCCEEDED / (SUCCEEDED + FAILED)` | finished_at，同一时间窗 | 分母为 0 → null，不输出 100% |
+| **B02 技术执行成功率（方案 A 已确认）** | **按 `finished_at` 所属统计窗口筛选唯一 Run，`100% × SUCCEEDED/(SUCCEEDED+FAILED)`**；`RUNNING` 与 `CANCELLED` 排除分子分母；同一 Run 的补报/状态更新不重复统计 | **以 `finished_at` 归属日已确认**；窗口长短、统计时区、迟到更新及测试环境过滤仍未确认，**不同于 B01 的 `started_at` 计次** | 零分母的具体展示规则、数据覆盖率与质量、百分比精度/文案待确认。**A12「目标≥95%」未获批准，不能当管理目标或默认告警阈值** |
+| 技术成功率（通用工程参考，非额外已批准展示项） | `SUCCEEDED / (SUCCEEDED + FAILED)` | finished_at，同一时间窗 | 零分母工程建议；正式展示另需批准 |
 | 技术失败次数 | `COUNT(status=FAILED)` | finished_at | 分母不是成功率计算依据 |
 | 平均执行耗时 | `AVG(duration_ms)`，仅有效已完成/失败且有 duration 的 Run | finished_at | 无有效样本 → null |
 | Token 消耗（可选） | Sum(input_tokens + output_tokens) | 归属 Run，明确计量来源 | 未提供不显示 |
