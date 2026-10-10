@@ -6,6 +6,8 @@
 >
 > **机器可读规范**：[OpenAPI 3.1 JSON](../openapi/agent-run-reporting-v1.json)；整体产品范围以 [17 极简 MVP](17-agent-log-dashboard-mvp.md) 为准。
 >
+> **B03 P0 新增记录要求（2026-10-10，待版本化落地）**：首期一次 Agent Run 需支持保存输入 Token、输出 Token、实际计费模型标识、该次 Token×模型有效单价得到的 ESTIMATED 成本（价格依据可追溯）。**现有 v1.0 只有可选的两类 Token 字段，严格校验不接受新增 `model_id`/`estimated_cost_amount`；本文件所述 v1.0 契约没有因此变更**。必须后续确认向后兼容的新协议/独立模型标识来源、字段必填/空值/币种等，不能要求老 v1 客户端立刻上报新字段。P0 不强制完整多模型调用 Trace 或供应商账单。[详细草案](22-token-pricing-cost-design.md)。
+>
 > 本接口上报**Agent 一次技术执行 Run 的摘要**，不是原文 Prompt/模型响应/所有工具步骤日志，也不是菜品、财务等业务系统的最终回执。
 
 ## 1. 一句话接入方式
