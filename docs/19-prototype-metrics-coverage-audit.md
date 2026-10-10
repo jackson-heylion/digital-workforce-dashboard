@@ -1,3 +1,5 @@
+> **2026-10-10 产品范围说明（A10）**：本文是原始 HTML 的**历史完整审计**，所以仍如实保留对源文件五场景页和 D01–D11 的描述；这些演示场景已被用户明确取消，**新 Vue Demo 与正式版均不实施 p7、场景演示入口/绑定、相关专属指标**。只有普通 Agent Run 指标、A07 业务来源说明等按已批准范围继续。详见 [21 指标台账](21-metrics-field-confirmation-register.md)。
+
 # 19｜原型全量指标与数据覆盖审计：Run 上报 v1 的差距
 
 > **状态：原型审阅结论（2026-10-10），不是上报 v1.1 已批准的修改。** 项目发起人指出仅 Run 状态/耗时/Token 不能覆盖原始看板，要求先完整检查原型指标；本文件逐页对照 `prototype/index.html`、内联 `emps`、`perfData`、`genTrend`、`pushFeed` 与 ECharts 配置。**此次不修改[18 已写入的 v1 上报协议](18-agent-run-reporting-standard.md)。**
