@@ -1,6 +1,8 @@
 # 04｜Agent Run 指标与日志契约（极简 MVP）
 
-> **Run 上报标准 v1**：[18 人类可读规范](18-agent-run-reporting-standard.md) | [OpenAPI](../openapi/agent-run-reporting-v1.json)。该标准是最新接入契约。\n>\n> 最新范围以 [17](17-agent-log-dashboard-mvp.md) 为准：**只登记 Agent、采集 Run 日志、展示技术运营指标**。下列字段/公式是建议版本 v0.2；接入时必须按真实平台数据验证。**不再要求源业务最终回执、独立业务 Task、工时与 ROI 核验。**
+> **Run 上报标准 v1**：[18 人类可读规范](18-agent-run-reporting-standard.md) | [OpenAPI](../openapi/agent-run-reporting-v1.json)。该标准是最新接入契约。
+>
+> 最新范围以 [17](17-agent-log-dashboard-mvp.md) 为准：**只登记 Agent、采集 Run 日志、展示技术运营指标**。下列字段/公式是建议版本 v0.2；接入时必须按真实平台数据验证。**不再要求源业务最终回执、独立业务 Task、工时与 ROI 核验。**
 
 ## 1. 最小实体
 
