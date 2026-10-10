@@ -28,6 +28,7 @@
 | **D28 · B02** | **自动化成功率方案 A：按 `finished_at` 选已终态唯一 Run，技术成功率 = SUCCEEDED/(SUCCEEDED+FAILED)；排除 RUNNING 与 CANCELLED；不认定业务成功/一次通过** | 用户，2026-10-10 | [21 指标确认台账](21-metrics-field-confirmation-register.md)；时区/窗口/精度/零分母/迟到/环境/数据质量待定；**A12 方案 B 另已确认：目标可配置且无预设 95%**；不改 Run 上报 OpenAPI |
 | **D29 · A12** | **成功率目标选择方案 B：技术成功率目标可以由授权管理者后续配置，但初始不预设数值，不默认采用原型 95%；只有真实批准并生效的目标才可展示数值** | 用户，2026-10-10 | [21 指标确认台账](21-metrics-field-confirmation-register.md)；Owner、适用范围/生效/权限、达标与最低样本、告警、首页/监控一致性和实现形式仍待确认；B03 当日成本当前讨论 |
 | **D30 · B03 部分确认** | **用户明确要求支持 Token 用量计算模型价格成本**，应按真实模型 usage × 有版本的定价规则产出标记 `ESTIMATED` 的模型费用；多模型/缓存须有明细，原 v1 无法泛化为精准成本 | 用户，2026-10-10 | [22 Token 成本计价建议](22-token-pricing-cost-design.md)、[21 决策台账](21-metrics-field-confirmation-register.md)；**B03 仍未选完整展示方案，模型价格管理/计费来源/日界/币种/协议扩展尚未批准**；v1/v1.1 和原型不变 |
+| **D31 · B03 P0** | **用户明确 P0 先按单次 Agent Run 记录输入 Token、输出 Token、计费模型标识、该次成本价格**；估算额使用真实 Token × 对应模型价格规则计算，保留价格版本依据；P0 不要求模型调用级明细或账单对账 | 用户，2026-10-10（「P0先记录单次执行的输入输出token、模型标识、成本价格」） | [22 Token 设计](22-token-pricing-cost-design.md)、[21 台账](21-metrics-field-confirmation-register.md)；新字段名/协议升级/必填/价格配置与校验、币种/缓存/多模型缺值、当日 KPI 展示与 B04 单均成本均待确认；原 v1 / v1.1 草案和原始 HTML 不变 |
 
 **范围解释建议**：一 Agent 登记 = 一数字员工卡；执行一次 = 一条唯一 Agent Run；Run 成功 ≠ 业务成功。这个简化口径可在获取第一批真实日志样本后做字段级细化。
 
