@@ -1,97 +1,72 @@
-# Digital Workforce Dashboard｜数字员工运营看板
+# Digital Workforce Dashboard｜数字员工看板
 
-> 状态：**方案讨论 / Design Draft**（2026-10-09）。当前仓库首先承载产品与技术落地方案，**不是已上线平台**。
+> **当前已确认 MVP（2026-10-10）**：**Agent 登记 → 采集 Agent 执行日志 → 展示看板**。不做复杂数字员工管理、业务回执或工时/财务对账。
 >
-> **已确认三项**：首期**集团管理层优先**（2026-10-09）；**原型页面布局 1:1 还原**（2026-10-10）；前端技术栈采用 **Vue 3 + TypeScript + Vite**（2026-10-10）。其余指标口径、后端技术与管理层改版仍待评审。
+> 已确认：**集团管理层优先**；保持原始 HTML 的**页面布局 1:1 复刻**；采用 **Vue 3 + TypeScript + Vite**。后端框架/数据接入具体实现细节仍是实施建议。当前仓库有原型和方案文档，**尚未完成 Vue 应用、后端服务和生产接入**。
 
-面向集团已有的 AI Agent、Skill、自动化流程与规则引擎，提供**统一目录、业务任务可观测、效能核算、异常处置与治理**。不替代百炼、钉钉或各业务系统，也不要求把已有数字员工迁移到统一运行时。
+## 从这里开始
 
-## 当前业务设计专题（待确认）
+- **[17 · 极简 Agent 看板 MVP（当前范围，以此为准）](docs/17-agent-log-dashboard-mvp.md)**：功能范围、字段、最小 API、数据口径、开发顺序与安全边界。
+- **[原始可交互 HTML](prototype/index.html)**：严格保留，不修改；设计和演示的视觉对照基准。
+- [原型查看说明](prototype/README.md)：`python3 -m http.server 8000 --directory prototype`，访问 `http://localhost:8000/`（图表需要可访问 ECharts CDN）。
+- [ADR-001 · 前端技术路线](docs/10-frontend-adr.md) | [UI 复刻规范](docs/08-ui-reproduction.md) | [Vue 开发任务](docs/11-frontend-backlog.md) | [GitHub Issues](https://github.com/jackson-heylion/digital-workforce-dashboard/issues)。
 
-在推进前端 FE-00/真实 API 前，建议先共同确认**数字员工的边界与登记方式**、**运行平台资源绑定**、**业务结果从哪些系统采集**及**效能/成本数据的签认权**。最新的 [14 管理中心](docs/14-employee-management.md) 与 [15 数据接入](docs/15-data-integration.md) 为讨论稿，**不意味着用户已批准管理表单、接口或数据源连通**。
+## 只做三件事
 
-## 已确认的方向与产品分层
+| 功能 | 最小能力 | 不做 |
+| --- | --- | --- |
+| **Agent 登记** | 新增/编辑/停用；名称、平台、外部 Agent ID、部门、负责人、说明 | 多能力绑定、流程编排、上岗双审批、资产自动发现 |
+| **Agent 日志采集** | HTTP 上报或按源平台做简单只读适配；Run ID、状态、开始/结束时间、耗时、可选错误/Token；分页查看 | 源业务系统回执整合、复杂 Connector 系统、事件对账、全量 Prompt 存储 |
+| **看板展示** | 注册 Agent 数、执行次数、技术成功率、平均耗时、执行趋势、失败记录、Agent 详情 | 业务成功率、节省工时、ROI、未核验费用 |
 
-- **主入口：原型的“总览 · 数字员工 · 效能”**，先复刻原型布局；后续按集团管理层优先定位提升建设覆盖、业务交付、已核验工时、运行成本等内容的可信度。
-- **辅助入口：监控中心**，继续保留运维下钻能力，但不以实时日志作为管理层首屏主体。
-- **关键要求**：管理层可从汇总 KPI 下钻到部门、数字员工、业务结果凭证；未核验的指标显示“待核验”。
-- **技术路线已确认**：独立 `frontend/` 使用 Vue 3 + TypeScript + Vite；原型 HTML 不改动。详细见 [ADR-001](docs/10-frontend-adr.md) 和 [开发清单](docs/11-frontend-backlog.md)。
-- **其他方案尚未批准**：改成四张管理层 KPI、默认本月至今、重排首屏以及两场景试点等属于后续增量优化，**不覆盖第一阶段的原型 1:1 还原要求**。
+**MVP 最简口径**：**一条登记 Agent = 看板一张数字员工卡；执行次数 = Agent Run 次数**。Run 的成功/失败是**技术执行结果**，不是业务系统最终交付。Agent 登记“启用”不等于最近有运行活动，首页标记最近采集时间。
 
-## 原型预览与页面还原（开发基准）
+**原型 1:1 与真实口径不冲突**：UI-F0 先照原型四页、两一级导航及五个静态演示场景复刻；UI-F1 在**相同布局**换上实际日志数据，把原型“节省工时/成本/任务”等不可靠经营含义改为执行次数、平均耗时、失败数量或未接入状态。示例数字只在隔离 Demo 环境出现。
 
-> 自动化开发工具请先阅读根目录的 [AGENTS.md](AGENTS.md)，保证复刻原型时不擅自重排页面或覆盖源文件。
+## 最小架构（建议，非已批准后端选型）
 
-- **[查看完整原始 HTML：prototype/index.html](prototype/index.html)**（附件逐字节原样上传，包含 CSS、ECharts、交互逻辑与演示数据）。
-- [原型说明和本地运行方式](prototype/README.md)｜[**1:1 UI 还原规范、验收清单**](docs/08-ui-reproduction.md)。
-- 本地运行：`python3 -m http.server 8000 --directory prototype`，访问 `http://localhost:8000/`。
-- **还原顺序**：先严格复刻原型视觉、模块顺序和交互 → 再替换真实数据 → 最后经评审优化管理层指标与布局。避免以新草图代替原始页面。
-- 静态文件含明确的演示/模拟运行行为；**可直接查看原型，不代表已实现真实业务联通，也不代表 GitHub Pages 已经部署**。
+```text
+已有 Agent 平台 / 自研 Agent 服务
+          │  HTTPS Run 摘要上报（或单个只读适配器）
+          ▼
+   Agent 日志接收 API
+          ▼
+   MySQL: Agent / Run / (可选 Log)
+          │
+          ├── Agent 登记/详情 API
+          ├── Run 日志查询 API
+          └── Dashboard 统计/趋势 API
+          ▼
+    Vue 3 + TypeScript + Vite + ECharts
+```
 
-## 项目目标
+建议后端使用一个轻量的 Spring Boot 服务（可配合现有 Java 基础设施），首期普通 MySQL 及分页/索引足够，不必建设 Kafka/Flink/Doris/复杂微服务。是否真的需要 Agent 平台主动上报、由调用方上报还是只读拉取，取决于现有源系统能力。
 
-用可靠证据回答：**谁在工作 → 做了什么 → 完成得怎样 → 花了多少钱 → 节省了多少 → 异常由谁负责**。
+## MVP 开发任务
 
-- **管理层**：看覆盖范围、真实交付、成本与净收益；支持按部门/场景/时间下钻。
-- **部门负责人**：看业务任务达成、人工接管、例外待办；管理责任人。
-- **开发/运维**：看任务执行链、错误码、依赖、延迟、告警及重试。
-- **财务/审计**：查看指标口径、样本与证据链、政策版本、关键操作记录。
+1. **UI-F0**：[FE-00～FE-08](docs/11-frontend-backlog.md)：原型视觉/交互忠实还原，与真实数据接入解耦。
+2. **Agent 登记/日志/查询**：参照 [17 号方案](docs/17-agent-log-dashboard-mvp.md) 与对应 GitHub Issues 完成最小后端。
+3. **UI-F1**：真实 Agent 目录、Run、趋势、失败日志替代 Demo Provider；保证真实 0 / 无数据 / 延迟不同显示。
 
-## 方案文档
+当前无生产日志、Token 计费数据或原系统业务回执，因此**不能声称已接入某些原型标记“真实在用”的员工**。
 
-| 文档 | 内容 |
+## 文档导航
+
+| 文档 | 状态与用途 |
 | --- | --- |
-| [原始交互原型](prototype/index.html) | **完整附件 HTML，不做删改，首期页面还原的视觉与交互事实来源** |
-| [原型使用说明](prototype/README.md) | 原文件哈希、预览方式、外部依赖和保护约束 |
-| [原型审阅与问题清单](docs/01-prototype-review.md) | 原型 v6 页面清点、亮点、数据口径和风险 |
-| [产品需求与页面设计](docs/02-product-prd.md) | 用户角色、页面信息架构、MVP 范围、五个场景 |
-| [技术架构与集成设计](docs/03-architecture.md) | 统一登记、数据采集、业务事件、查询层、权限与监控 |
-| [指标口径与数据契约](docs/04-metrics-and-contracts.md) | 工作量/成功率/工时/成本计算；示例事件、表与接口 |
-| [里程碑与决策清单](docs/05-roadmap-and-decisions.md) | 交付阶段、验收标准、待业务与技术方确认事项 |
-| [管理层首页设计与指标优先级](docs/06-management-dashboard.md) | 已确认管理层优先；首屏、KPI、员工目录、场景展示与交互建议 |
-| [管理层指标查询与架构取舍](docs/07-executive-data-architecture.md) | 经营数据真值、快照聚合、技术架构决策比较与接口样例 |
-| [UI 1:1 还原与验收规范](docs/08-ui-reproduction.md) | 原型模块映射、开发次序、截图/交互回归及变更边界 |
-| [原型工程化与数据接入方案](docs/09-frontend-data-implementation.md) | Vue/原生方案对比、Demo/Production Provider、API 轮廓和迭代计划 |
-| [ADR-001：Vue 3 前端技术路线](docs/10-frontend-adr.md) | **已确认** Vue 3 + TypeScript + Vite、原型不变和开发纪律 |
-| [Vue 工程目录与开发 Backlog](docs/11-frontend-backlog.md) | 目标目录、开发任务 FE-00～09、GitHub Issue、依赖关系与里程碑 |
-| [Vue 页面交互契约](docs/12-frontend-interactions.md) | 页面/路由映射、员工详情、场景跳转、文件上传、告警及 Demo 状态 |
-| [验收测试与 CI 门禁](docs/13-ui-acceptance.md) | 五个 viewport、截图回归、Playwright/Vitest 用例和 UI-F0/UI-F1 DoD |
-| [数字员工资产管理中心（讨论）](docs/14-employee-management.md) | 数字员工定义、业务能力、资源绑定、生命周期、Owner、上岗核验与授权 |
-| [多源数据接入与治理（讨论）](docs/15-data-integration.md) | Connector、源身份映射、Task/Run/Outcome、接入健康、对账与五场景来源矩阵 |
-| [五场景数据源盘点表](docs/16-source-inventory.md) | 尚待源 Owner 核实的任务 ID、业务回执、接入方式、费用/基线和权限 |
+| [17 当前 MVP](docs/17-agent-log-dashboard-mvp.md) | **当前范围最高优先级** |
+| [10 前端 ADR](docs/10-frontend-adr.md) | 已确认 Vue 3 + TS + Vite |
+| [08 UI 基准](docs/08-ui-reproduction.md) / [12 交互](docs/12-frontend-interactions.md) / [13 测试](docs/13-ui-acceptance.md) | UI-F0 原型还原参考；UI-F1 部分旧的业务核验要求需按 17 修订 |
+| [11 开发清单](docs/11-frontend-backlog.md) / [05 决策及里程碑](docs/05-roadmap-and-decisions.md) | 当前与后续任务 |
+| [01 原型审阅](docs/01-prototype-review.md) | 原型事实，不代表生产数据 |
+| [02 产品需求](docs/02-product-prd.md) / [03 架构](docs/03-architecture.md) / [04 指标字典](docs/04-metrics-and-contracts.md) | 按极简 MVP 收缩后的建议 |
+| [06 管理层扩展](docs/06-management-dashboard.md) / [07 原数据架构](docs/07-executive-data-architecture.md) / [09 工程化讨论](docs/09-frontend-data-implementation.md) | 历史扩展设想，**不是 MVP 必须实现** |
+| [14 复杂员工管理](docs/14-employee-management.md) / [15 复杂数据接入](docs/15-data-integration.md) / [16 五场景盘点](docs/16-source-inventory.md) | 旧方案存档，**不用于首期开发验收** |
 
-## 关键约束
+## 安全提醒
 
-1. **演示不等于生产**：原型的 9 名员工、5 个标记为“真实在用”的案例及图表数值仅表示**原型声明与示例**；正式上线须以接入凭证、负责人确认和采集数据核验。
-2. **业务任务不等于模型调用**：一次业务任务可能包含多个 Agent 轮次、工具调用、重试和人工审核，不能重复算执行量。
-3. **数据必须可解释**：每项 KPI 提供范围、分母、统计时间、数据新鲜度与来源；无法验证时显示“未接入/待校准”，不能用随机模拟填充。
-4. **责任边界明确**：看板可观测、可治理；业务最终写入/审批由原业务系统负责，高风险变更保留授权与审计。
-5. **公开仓库特别提醒**：应项目发起人明确要求，**原始完整 HTML 已原样上传**，其中包含集团名称、内部业务流程/审批规则和示例人员信息。仓库当前公开可见，**不等于已获得组织的信息安全公开许可**；负责人应确认是否需要改为私有仓库。后续不要提交真实账单、合同明细、密钥、生产接口和未授权人员数据。
-
-## MVP 技术架构（前端已确认；后端待评审）
-
-- **前端已确认：Vue 3 + TypeScript + Vite**；沿用原型 ECharts 视觉。推荐 Vue Router/Playwright，具体工程依赖与版本在 FE-00 中落实。
-- 后端：Java 17/21 + Spring Boot 3 + MyBatis-Plus；复用集团 IAM/OIDC 与现有 API 网关。
-- 元数据/业务流水：MySQL；实时聚合可选 Redis；事件接入首期支持 HTTP API/Webhook，后续可接 Kafka。
-- 刷新：建议手动刷新或 3–5 分钟轮询 + 后端指标快照；**秒级 SSE 为可选演进**，不是管理层 MVP 的硬依赖。
-- 演进：任务量与分析压力达到阈值后再考虑 Doris/其他 OLAP，避免 MVP 过度建设。
-
-## 推荐落地顺序
-
-**UI-F0 按原型忠实复刻（与口径/接入协议并行） → UI-F1 接真实源业务数据、权限与对账 → 监控闭环 → UI-F2 经评审优化管理层布局与效能 → 扩至五场景。**
-
-建议先接：菜品调整（工具调用型）与智能报销（长流程、含人工审批）。它们能覆盖两类关键模式。其余三类再分批接入。
-
-## 现状与下一步
-
-- 本仓库现有**可直接打开的原始 HTML 演示原型 + ADR/设计文档 + FE-00～FE-09 的 GitHub 开发 Issues**。**尚未创建 `frontend/` 可执行工程、未跑视觉回归、未接入真实 API、未配置生产部署**。
-- 已确认：首期**集团管理层优先**。待确认：具体管理指标排序、接入方式、业务成功定义、工时基线、成本来源、审批与权限边界。
-- 讨论统一汇总到 [决策清单](docs/05-roadmap-and-decisions.md)，未决事项不能被视作已经批准的实施规则。
-
-### 原型来源
-
-方案依据用户提供的《数字员工看板_可交互原型.html》（原型页内标注 v6，2026-09-23）进行评审；原文件现已完整保存在 [prototype/index.html](prototype/index.html)，经 Git Blob SHA 验证与附件一致。文档中对原型观察与新增建议仍做了区分。
+此仓库**公开**，其中依项目发起人要求上传了完整原型，包含集团内部业务流程说明；请确认公开许可，必要时改私有。实际生产日志/Prompt/Token/密钥、账号、业务明细与客户个人数据都不得提交仓库或公开演示。正式日志接收和查看必须认证授权并默认脱敏。
 
 ## License
 
-尚未选择许可证。仓库公开可见**不代表**已授予开源使用许可；如计划公开开源，后续明确许可证与集团内部内容边界。
+尚未选择许可证。仓库公开可见不等于已授权对原型或公司业务内容进行再分发。
