@@ -2,7 +2,13 @@
 
 > **当前已确认 MVP（2026-10-10）**：**Agent 登记 → 采集 Agent 执行日志 → 展示看板**。不做复杂数字员工管理、业务回执或工时/财务对账。
 >
-> 已确认：**集团管理层优先**；保持原始 HTML 的**页面布局 1:1 复刻**；采用 **Vue 3 + TypeScript + Vite**。后端框架/数据接入具体实现细节仍是实施建议。当前仓库有原型和方案文档，**尚未完成 Vue 应用、后端服务和生产接入**。
+> 已确认：**集团管理层优先**；保持原始 HTML 的**页面布局 1:1 复刻**；采用 **Vue 3 + TypeScript + Vite**；**Agent 调用处通过一个标准 HTTP 上报接口采集 Run 日志**。后端框架/数据接入具体实现细节仍是实施建议。当前仓库有原型和方案文档，**尚未完成 Vue 应用、后端服务和生产接入**。
+
+## 最新确认：调用处上报 Run 日志
+
+- **[18 · Agent Run 上报标准 v1.0](docs/18-agent-run-reporting-standard.md)**：`POST /api/v1/ingest/agent-runs`、字段校验、Bearer 权限、状态转换、幂等、重试、调用方埋点与验收。
+- [OpenAPI 3.1 机器可读接口契约](openapi/agent-run-reporting-v1.json)：便于客户端/服务端对照，规范已入库；**尚无已运行的接口实现**。
+- 调用方**结束时上报一次终态即可**，要显示“执行中”再使用同一个 `run_id` 上报 RUNNING；上报失败不应影响 Agent 原业务调用。
 
 ## 从这里开始
 
@@ -40,7 +46,7 @@
     Vue 3 + TypeScript + Vite + ECharts
 ```
 
-建议后端使用一个轻量的 Spring Boot 服务（可配合现有 Java 基础设施），首期普通 MySQL 及分页/索引足够，不必建设 Kafka/Flink/Doris/复杂微服务。是否真的需要 Agent 平台主动上报、由调用方上报还是只读拉取，取决于现有源系统能力。
+建议后端使用一个轻量的 Spring Boot 服务（可配合现有 Java 基础设施），首期普通 MySQL 及分页/索引足够，不必建设 Kafka/Flink/Doris/复杂微服务。**已确认采集策略：在 Agent 调用处增加统一上报**；暂不建设平台主动拉取或通用 Connector。
 
 ## MVP 开发任务
 
@@ -55,6 +61,7 @@
 | 文档 | 状态与用途 |
 | --- | --- |
 | [17 当前 MVP](docs/17-agent-log-dashboard-mvp.md) | **当前范围最高优先级** |
+| [18 Run 上报标准](docs/18-agent-run-reporting-standard.md) / [OpenAPI](openapi/agent-run-reporting-v1.json) | **已确认调用侧上报方式**；标准字段、状态、鉴权与幂等契约 |
 | [10 前端 ADR](docs/10-frontend-adr.md) | 已确认 Vue 3 + TS + Vite |
 | [08 UI 基准](docs/08-ui-reproduction.md) / [12 交互](docs/12-frontend-interactions.md) / [13 测试](docs/13-ui-acceptance.md) | UI-F0 原型还原参考；UI-F1 部分旧的业务核验要求需按 17 修订 |
 | [11 开发清单](docs/11-frontend-backlog.md) / [05 决策及里程碑](docs/05-roadmap-and-decisions.md) | 当前与后续任务 |
