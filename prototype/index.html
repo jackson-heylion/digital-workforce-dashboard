@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字员工看板（原型演示）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --bg:#F2F5F9; --card:#FFFFFF; --line:#E3E8EF;
+    --text:#1A1B1C; --sub:#5B6472; --primary:#1F6FEB; --primary-dark:#1756B8;
+    --teal:#0E9F8A; --green:#16A34A; --warn:#D97706; --red:#DC2626; --amber:#B45309;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",Arial,sans-serif;font-size:14px;line-height:1.55;}
+  a{color:var(--primary);text-decoration:none;}
+  .topbar{background:linear-gradient(120deg,#123A6B,#1F6FEB 60%,#2B8AE6);color:#fff;padding:14px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .topbar .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;}
+  .logo .mark{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:17px;}
+  .topbar .env{margin-left:auto;font-size:12px;background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px;}
+  nav{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:4px;padding:0 28px;overflow-x:auto;}
+  nav button{flex:0 0 auto;border:none;background:none;padding:13px 18px;font-size:14px;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit;}
+  nav button.on{color:var(--primary);font-weight:600;border-bottom-color:var(--primary);}
+  main{padding:20px 28px 48px;max-width:1280px;margin:0 auto;}
+  .page{display:none;} .page.on{display:block;}
+  .banner{background:linear-gradient(120deg,#EEF5FF,#E9FAF6);border:1px solid #D7E7FB;border-radius:14px;padding:18px 22px;margin-bottom:18px;}
+  .banner h2{font-size:17px;margin-bottom:4px;}
+  .banner p{color:var(--sub);font-size:13px;}
+  .kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+  .kpi{flex:1 1 160px;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+  .kpi .t{font-size:12px;color:var(--sub);}
+  .kpi .v{font-size:24px;font-weight:700;margin-top:4px;letter-spacing:-.5px;}
+  .kpi .s{font-size:11px;color:var(--sub);margin-top:2px;}
+  .kpi .v.up{color:var(--green);} .kpi .v.teal{color:var(--teal);}
+  .v.green{color:var(--green);}
+  .v.amber{color:var(--amber);} .kpi .v.blue{color:var(--primary);}
+  .grid2{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+  .panel{flex:1 1 420px;min-width:280px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+  .panel h3{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .panel h3 .tag{margin-left:auto;font-size:11px;font-weight:400;color:var(--sub);}
+  .chart{width:100%;height:260px;}
+  .chart.tall{height:300px;}
+  .note{font-size:11px;color:var(--sub);margin-top:6px;}
+  .wf-drop{border:1.5px dashed #C7D2E0;border-radius:12px;background:#FBFCFE;padding:18px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+  .wf-drop:hover,.wf-drop.drag{border-color:var(--primary);background:#F2F7FF;}
+  .wf-ico{font-size:24px;color:var(--primary);line-height:1;}
+  .wf-tip{font-size:13.5px;font-weight:600;color:var(--text);margin-top:8px;}
+  .wf-sub{font-size:11.5px;color:var(--sub);margin-top:4px;}
+  .wf-preview{flex-direction:column;align-items:center;gap:10px;}
+  .wf-media{max-width:100%;max-height:460px;border-radius:10px;border:1px solid var(--line);display:block;}
+  .wf-filecard{display:flex;align-items:center;gap:12px;width:100%;max-width:560px;text-align:left;}
+  .wf-filecard .fi{width:46px;height:46px;border-radius:10px;background:#FEF3F2;color:#D92D20;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex:0 0 auto;}
+  .wf-filecard .fm{flex:1;min-width:0;}
+  .wf-filecard .fm .n{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wf-filecard .fm .s{font-size:11px;color:var(--sub);margin-top:2px;}
+  .wf-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+  .wf-mini{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;text-decoration:none;}
+  .wf-mini:hover{border-color:var(--primary);color:var(--primary);}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;}
+  .b-run{background:#E7F7EE;color:var(--green);} .b-dev{background:#E8F0FE;color:var(--primary);}
+  .b-eval{background:#FDF1E3;color:var(--amber);} .b-ret{background:#F1F2F4;color:var(--sub);}
+  .b-off{background:#FDEBEC;color:var(--red);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle;}
+  th{color:var(--sub);font-weight:500;font-size:12px;background:#F8FAFC;white-space:nowrap;}
+  tr:hover td{background:#F7FAFF;}
+  .lc-steps{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .lc-step{flex:1 1 130px;min-width:128px;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--primary);border-radius:12px;padding:12px 13px;cursor:pointer;position:relative;transition:box-shadow .15s;}
+  .lc-step:hover{box-shadow:0 4px 14px rgba(31,107,235,.14);}
+  .lc-step .no{font-size:11px;color:var(--primary);font-weight:700;}
+  .lc-step .nm{font-size:13.5px;font-weight:600;margin:3px 0;}
+  .lc-step .cnt{font-size:12px;color:var(--sub);}
+  .lc-step.active{border-top-color:var(--teal);background:#F4FCFA;}
+  .lc-detail{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:14px;}
+  .lc-detail h4{font-size:15px;margin-bottom:8px;color:var(--primary-dark);}
+  .lc-detail ul{padding-left:18px;color:var(--sub);font-size:13px;}
+  .lc-detail li{margin:3px 0;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+  .toolbar select,.toolbar input{padding:7px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:#fff;font-family:inherit;color:var(--text);}
+  .filter-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12px;color:var(--sub);cursor:pointer;}
+  .filter-chip.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .emp-cards{display:flex;gap:14px;flex-wrap:wrap;}
+  .emp{flex:1 1 250px;min-width:235px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;border-left:4px solid var(--primary);}
+  .emp.teal{border-left-color:var(--teal);} .emp.green{border-left-color:var(--green);} .emp.amber{border-left-color:var(--amber);}
+  .emp .head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .emp .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#D6E6FF,#BFE9DF);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary-dark);font-size:15px;}
+  .emp .nm{font-weight:600;font-size:14px;}
+  .emp .dept{font-size:11px;color:var(--sub);}
+  .emp .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--sub);}
+  .emp .stats b{color:var(--text);font-weight:600;}
+  .alert{border-left:3px solid var(--warn);background:#FFF9EF;border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:13px;}
+  .alert.red{border-left-color:var(--red);background:#FEF3F2;}
+  .alert .tm{font-size:11px;color:var(--sub);}
+  .ok-row{color:var(--green);} .err-row{color:var(--red);}
+  .foot{color:var(--sub);font-size:11px;text-align:center;padding:20px 0 6px;}
+  .pill{display:inline-block;background:#E8F0FE;color:var(--primary);font-size:11px;border-radius:6px;padding:2px 7px;margin-right:4px;}
+  .exec-flow{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin:10px 0;}
+  .exec-step{flex:1 1 132px;min-width:122px;background:#F4F8FF;border:1px solid #D7E7FB;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--sub);}
+  .exec-step b{display:block;font-size:13px;margin-bottom:2px;color:var(--primary-dark);}
+  .exec-step.hot{background:#F0FBF8;border-color:#BFE9DF;}
+  .exec-step.hot b{color:var(--teal);}
+  .exec-arrow{align-self:center;color:var(--primary);font-weight:700;font-size:16px;flex:0 0 auto;}
+  .b-real{background:#FEF4E4;color:#B45309;}
+  .b-demo{background:#EFF1F4;color:#6B7280;}
+  .form-line{display:flex;gap:10px;align-items:center;margin-bottom:9px;flex-wrap:wrap;font-size:12.5px;}
+  .form-line label{flex:0 0 96px;color:var(--sub);}
+  .form-line input,.form-line select{flex:1 1 200px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;background:#fff;font-family:inherit;color:var(--text);}
+  .form-line .hint{width:100%;color:var(--sub);font-size:11px;padding-left:106px;}
+  .live{display:inline-flex;align-items:center;gap:7px;font-size:12px;background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px;}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 0 rgba(74,222,128,.6);animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.55);}70%{box-shadow:0 0 0 8px rgba(74,222,128,0);}100%{box-shadow:0 0 0 0 rgba(74,222,128,0);}}
+  .live-feed{display:flex;flex-direction:column;gap:5px;}
+  .feed-item{font-size:12px;color:var(--sub);border-left:3px solid var(--teal);background:#F7FBF9;padding:5px 10px;border-radius:0 8px 8px 0;}
+  .feed-item .tm{color:var(--primary);font-weight:600;margin-right:6px;}
+  .op-btn{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:9px;padding:7px 14px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:all .15s;}
+  .op-btn:hover{border-color:var(--primary);color:var(--primary);}
+  .op-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .op-btn.primary:hover{background:var(--primary-dark);}
+  .op-btn.small{padding:3px 9px;font-size:11.5px;border-radius:7px;}
+  .row-actions{margin-top:8px;font-size:12px;display:flex;gap:12px;}
+  .row-act{color:var(--primary);cursor:pointer;text-decoration:none;}
+  .row-act:hover{text-decoration:underline;}
+  .row-act.del{color:var(--red);}
+  .emp-src{font-size:11px;color:var(--sub);margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);}
+  .toast-box{position:fixed;top:70px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+  .toast{background:#123A6B;color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;box-shadow:0 6px 20px rgba(18,58,107,.3);transition:opacity .3s;max-width:360px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,30,50,.45);display:flex;align-items:flex-start;justify-content:center;z-index:9998;padding:60px 16px;}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:520px;padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.25);}
+  .modal h4{font-size:16px;margin-bottom:14px;color:var(--primary-dark);}
+  .modal .form-line{margin-bottom:12px;}
+  .modal .form-line label{flex-basis:88px;}
+  .modal .form-line input,.modal .form-line select{flex:1 1 240px;font-size:13px;}
+  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+  .approve-item{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:8px;font-size:13px;flex-wrap:wrap;}
+  .approve-item .who{font-weight:600;}
+  .approve-item .act{margin-left:auto;display:flex;gap:8px;}
+  .approve-item.done{opacity:.55;background:#F7F8FA;}
+  .al-item.done{opacity:.55;background:#F7F8FA;border-left-color:#C9D4E3;}
+  .mech{display:flex;flex-direction:column;gap:6px;}
+  .lane{border:1px solid var(--line);border-radius:12px;background:#FAFBFD;display:flex;align-items:stretch;overflow:hidden;}
+  .lane.hot{border-color:#BBD3F5;background:#F2F7FF;}
+  .lane.soft{background:#F7FBF9;border-color:#CBE8DF;}
+  .lane-tag{flex:0 0 118px;background:#E9EFF7;color:var(--primary-dark);font-size:12px;font-weight:700;padding:12px 10px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.4;}
+  .lane.hot .lane-tag{background:#1F6FEB;color:#fff;}
+  .lane.soft .lane-tag{background:#0E9F8A;color:#fff;}
+  .lane-body{flex:1;display:flex;gap:8px;flex-wrap:wrap;padding:10px 12px;align-items:center;}
+  .m-node{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:12px;line-height:1.45;flex:1 1 200px;min-width:180px;}
+  .lane.hot .m-node{border-color:#BBD3F5;}
+  .m-down{text-align:center;color:var(--primary);font-size:12px;font-weight:600;padding:2px 0;letter-spacing:1px;}
+  .m-back{text-align:center;color:var(--teal);font-size:12px;font-weight:600;padding:2px 0;letter-spacing:1px;background:#F7FBF9;border-radius:8px;}
+  .ring8{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+  .ring8 .r{flex:1 1 200px;min-width:185px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#FAFBFD;font-size:12.5px;}
+  .ring8 .r .n{display:inline-block;background:var(--primary);color:#fff;border-radius:999px;width:20px;height:20px;line-height:20px;text-align:center;font-size:11px;margin-right:6px;font-weight:700;}
+  .ring8 .r b{color:var(--primary-dark);}
+  .pathline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;margin:8px 0;}
+  .pathline .pn{background:#EEF3FA;border:1px solid var(--line);border-radius:8px;padding:5px 9px;white-space:nowrap;}
+  .pathline .pn.hot{background:#1F6FEB;color:#fff;border-color:#1F6FEB;}
+  .pathline .pn.g{background:#E7F7EE;color:#0B6B4F;border-color:#CBE8DF;}
+  .pathline .ar{color:var(--sub);}
+  @media (max-width:640px){
+    .topbar{padding:12px 16px;} nav{padding:0 8px;}
+    main{padding:14px 12px 40px;}
+    .kpi{flex:1 1 45%;}
+    .chart{height:220px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span class="mark">🤖</span> 数字员工看板</div>
+  <span class="env">九毛九集团 · 信息中心</span>
+  <span class="live"><span class="live-dot"></span>系统运行中 · <b id="clock">--:--:--</b></span>
+</div>
+
+<nav id="nav">
+  <button class="on" data-page="p0">总览 · 数字员工 · 效能</button>
+  <button data-page="p4">监控中心</button>
+</nav>
+
+<main>
+<!-- ============ 总览 ============ -->
+<section class="page on" id="p0">
+  <div class="banner">
+    <h2>集团 AI 能力 · 数字员工运营中枢</h2>
+    <p>承接「岗位梳理 → 任务拆解 → 数字员工上岗 → 效能度量」全流程（MVP 版：总览 · 数字员工 · 效能整合为一页 + 监控中心）；真实在用 5 名（智能报销 / 菜品调整 / 采购情报 / 门店巡检 / 稽查排班）。</p>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="t">数字员工总数</div><div class="v" id="kpi-emp-total">9</div><div class="s">真实在用 <span id="kpi-emp-real">5</span> · 按部门组织</div></div>
+    <div class="kpi"><div class="t">当日执行任务</div><div class="v blue" id="kpi-today-runs">663</div><div class="s">实时滚动 · 演示口径</div></div>
+    <div class="kpi"><div class="t">当日成本</div><div class="v teal" id="kpi-today-cost">¥308</div><div class="s">单均 ¥0.46 · 演示口径</div></div>
+    <div class="kpi"><div class="t">自动化成功率</div><div class="v up">96.8%</div><div class="s">人工介入率 1.8% · 目标 ≥95%</div></div>
+  </div>
+  <div class="panel" style="padding:12px 14px;">
+    <h3>实时执行动态 <span class="tag" id="live-count">今日已执行 663 次</span></h3>
+    <div class="live-feed" id="live-feed"></div>
+    <div class="note">模拟实时：演示系统按真实时钟滚动产生执行记录（演示数据）。</div>
+  </div>
+
+  <div class="banner" style="background:linear-gradient(120deg,#F4F8FF,#F3FBF8);">
+    <h2>数字员工 · 按部门一览</h2>
+    <p>按部门组织全部数字员工（<b>真实在用 5</b> · 其余为演示/规划）；点击任一员工的「运行与绩效」进入二级详情页（运行情况 + 绩效档案）；「真实在用」员工另有「场景演示」入口。</p>
+  </div>
+  <div class="emp-cards" id="emp-list"></div>
+
+  <div class="grid2" style="margin-top:18px;">
+    <div class="panel">
+      <h3>节省工时趋势 <span class="tag">小时 / 月</span></h3>
+      <div class="chart" id="c-hours"></div>
+      <div class="note">演示数据：随数字员工数量增长，月度节省工时加速提升。</div>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:14px;">
+    <h3>成本趋势 <span class="tag">元 / 月</span></h3>
+    <div class="chart" id="c-cost"></div>
+    <div class="note">演示数据：全部数字员工月度总成本汇总（模型 Token + 工具/API + 基础设施 + 人工复核分摊）。单位：元。</div>
+  </div>
+  <div class="panel">
+    <h3>场景效能排行 <span class="tag">节省工时 Top 8</span></h3>
+    <div class="chart" id="c-top"></div>
+    <div class="note">演示数据：用于向管理层展示「哪些岗位先受益、为什么」。单位：小时（累计）。</div>
+  </div>
+</section>
+
+<!-- ============ 数字员工详情（二级页） ============ -->
+<section class="page" id="p11">
+  <div class="toolbar" style="margin-bottom:12px;">
+    <button class="op-btn" id="btn-back-list">← 返回总览</button>
+    <button class="op-btn primary" id="btn-go-scene" style="display:none;">查看场景演示 →</button>
+    <span class="sub">数字员工详情 · 二级页面（运行情况 + 绩效，由总览页进入）</span>
+  </div>
+  <div class="banner">
+    <h2 id="d-name">数字员工详情</h2>
+    <p id="d-meta">—</p>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="t">累计执行</div><div class="v blue" id="d-runs">—</div><div class="s">全部任务（记账口径）</div></div>
+    <div class="kpi"><div class="t">自动化成功率</div><div class="v up" id="d-ok">—</div><div class="s">一次通过率</div></div>
+    <div class="kpi"><div class="t">累计节省工时</div><div class="v teal" id="d-hrs">—</div><div class="s">对比人工处理</div></div>
+    <div class="kpi"><div class="t">今日执行</div><div class="v" id="d-today">—</div><div class="s" id="d-last">最近执行 --:--:--</div></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>运行情况 · 月度执行趋势 <span class="tag">次 / 月</span></h3>
+      <div class="chart" id="c-detail-trend"></div>
+      <div class="note">演示数据：该数字员工按月任务执行量（由累计执行按月度占比拆算）。</div>
+    </div>
+    <div class="panel">
+      <h3>节省工时趋势 <span class="tag">小时 / 月</span></h3>
+      <div class="chart" id="c-detail-hours"></div>
+      <div class="note">演示数据：该数字员工月度节省工时。</div>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:14px;">
+    <h3>成本趋势 <span class="tag">元 / 月</span></h3>
+    <div class="chart" id="c-detail-cost"></div>
+    <div class="note">演示数据：该数字员工月度成本（按月执行量 × 单均成本拆算）。单位：元。</div>
+  </div>
+  <div class="panel" style="margin-bottom:14px;">
+    <h3>工作流 <span class="tag">上传 1 张 · 重新上传自动覆盖</span></h3>
+    <div class="wf-drop" id="wf-drop">
+      <input type="file" id="wf-input" accept="image/*,.pdf,application/pdf" hidden>
+      <div class="wf-empty" id="wf-empty">
+        <div class="wf-ico">⬆</div>
+        <div class="wf-tip">点击或拖拽上传工作流文件</div>
+        <div class="wf-sub">支持 PDF / PNG / JPG / JPEG / GIF / WEBP，仅保留最近上传的 1 个</div>
+      </div>
+      <div class="wf-preview" id="wf-preview" style="display:none;"></div>
+    </div>
+    <div class="note">演示：仅保留最近上传的 1 个文件；再次上传会自动替换前一张。</div>
+  </div>
+  <div class="panel">
+    <h3>最近执行记录 <span class="tag">实时滚动 · 演示</span></h3>
+    <div class="live-feed" id="detail-log"></div>
+    <div class="note">模拟实时：演示系统按真实时钟滚动产生该数字员工的执行记录（演示数据）。</div>
+  </div>
+</section>
+
+<!-- ============ 真实场景 ============ -->
+<section class="page" id="p7">
+  <div class="toolbar" style="margin-bottom:12px;">
+    <button class="op-btn" id="btn-back-emp">← 返回总览</button>
+    <span class="sub">真实场景 · 二级页面（通过「总览 · 数字员工」进入）</span>
+  </div>
+  <div class="banner">
+    <h2>真实在用场景 · 五个标杆演示</h2>
+    <p>以下五个场景为集团真实落地 / 已建成能力（口径为演示示例），覆盖信息、财务、采购、内审、运营五大中心——展示数字员工从「入口」到「业务系统」再到「结果反馈」的完整闭环，这是给老板汇报时最有说服力的一组图。</p>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#F5F8FC;border:1px solid #E3E8EF;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;">
+    <b style="color:#1A1B1C;">场景导航：</b>
+    <a class="row-act" data-jump="sc-1">① 智能报销</a>
+    <a class="row-act" data-jump="sc-2">② 菜品调整</a>
+    <a class="row-act" data-jump="sc-3">③ 采购情报</a>
+    <a class="row-act" data-jump="sc-4">④ 门店巡检</a>
+    <a class="row-act" data-jump="sc-5">⑤ 稽查排班</a>
+    <span style="color:#5B6472;">· 点击场景标题右侧「↑ 顶部」可快速回到页首</span>
+  </div>
+
+  <div class="panel">
+    <h3>实时运行状态 <span class="tag">模拟真实运行 · 时间随系统时钟滚动</span></h3>
+    <div class="kpis" style="margin-bottom:0;">
+      <div class="kpi"><div class="t">智能报销 · 今日执行</div><div class="v blue" id="rs1-count">132</div><div class="s">最近执行 <span id="rs1-last">--:--:--</span></div></div>
+      <div class="kpi"><div class="t">菜品调整 · 今日执行</div><div class="v teal" id="rs2-count">86</div><div class="s">最近执行 <span id="rs2-last">--:--:--</span></div></div>
+      <div class="kpi"><div class="t">采购情报 · 今日查询</div><div class="v amber" id="rs3-count">45</div><div class="s">最近执行 <span id="rs3-last">--:--:--</span></div></div>
+      <div class="kpi"><div class="t">门店巡检 · 今日巡检</div><div class="v green" id="rs4-count">128</div><div class="s">最近执行 <span id="rs4-last">--:--:--</span></div></div>
+      <div class="kpi"><div class="t">稽查排班 · 今日处理</div><div class="v" id="rs5-count">6</div><div class="s">最近执行 <span id="rs5-last">--:--:--</span></div></div>
+    </div>
+    <div class="live-feed" id="rs-live" style="margin-top:10px;"></div>
+    <div class="note">模拟实时：演示系统按真实时钟产生五个场景的执行记录（演示数据），正式演示可切换为真实监控流。</div>
+  </div>
+
+  <div class="panel" id="sc-1">
+    <h3>场景一 · 智能报销助手 <a class="row-act" data-top="1" style="float:right;font-size:12px;font-weight:400;">↑ 顶部</a> <span class="tag"><span class="badge b-real">真实在用</span> 财务中心</span></h3>
+    <div class="exec-flow">
+      <div class="exec-step"><b>① 账单接入</b>各物业提供的不规则账单（费用明细 / 供应商 / 收款账号等原始信息）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>② 抽取与匹配</b>抽取费用原始信息 → 自动匹配对应门店</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>③ 规则转换</b>每条费用按规则转换为标准费用类型 + 圈定合同 + 匹配付款计划行</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>④ 提单生成</b>拼接打款摘要 + 做账备注，输出可确认提交的标准提单</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>⑤ 员工确认</b>最终确认（规则内免确认，直接流转）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>⑥ 提交财务审核</b>汇联易提单 → 财务审核 · 全程留痕可追溯</div>
+    </div>
+    <div class="grid2">
+      <div style="overflow-x:auto;flex:1 1 430px;min-width:280px;">
+      <table>
+        <tr><th style="width:22%">配置项</th><th>内容</th></tr>
+        <tr><td>输入</td><td>各物业不规则账单（发票 / 账单 PDF / 邮件附件，钉钉群机器人接收）</td></tr>
+        <tr><td>执行体</td><td>百炼智能体应用（OCR 抽取 + 门店匹配 + 费用规则引擎）</td></tr>
+        <tr><td>业务系统</td><td>汇联易费控平台（开放平台 API：提单整单/拆单、单据提交）+ 合同 / 付款计划数据</td></tr>
+        <tr><td>知识库</td><td>费用类型对照规则、门店映射表、合同与付款计划台账（RAG 可溯源）</td></tr>
+        <tr><td>人审节点</td><td>匹配失败 / 超预算 / 无合同圈定 → 转人工；规则内免确认</td></tr>
+        <tr><td>反馈方式</td><td>处理进度回钉钉消息卡片；异常推送待办</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 380px;min-width:260px;">
+        <h4 style="margin:6px 0 6px;">这个场景回答了什么问题</h4>
+        <ul style="font-size:13px;">
+          <li>把物业账单「人工读账单 → 手工建单」的活交给机器人：抽取、匹配、转换、拼接一步到位；</li>
+          <li>标准提单直接进汇联易，财务只审"该审的"，打款摘要与做账备注自动拼接，减少返工；</li>
+          <li>「员工确认 → 财务审核」两段式人机协作，关键动作留痕、合规可审计。</li>
+        </ul>
+        <div class="note" style="margin-top:8px;">对接参考：汇联易开放平台 sdk.huilianyi.com（标准接口封装 + 业务场景模板）；汇联易原生支持钉钉集成。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="background:#FFFBF5;border:1px solid #F2E3C8;">
+    <h3>免确认规则（决策已定稿）<span class="tag">grill-me 审核采纳 · 归财务中心配置</span></h3>
+    <div class="grid2">
+      <div style="flex:1 1 420px;min-width:270px;">
+      <table>
+        <tr><th style="width:30%">规则项</th><th>定稿口径</th></tr>
+        <tr><td>规则配置权</td><td>财务部（平台留操作日志，变更可审计）</td></tr>
+        <tr><td>适用单</td><td>低风险小额合规单（金额阈值内 / 发票校验通过 / 无历史异常）</td></tr>
+        <tr><td>生效方式</td><td>免确认规则上线前由财务负责人签字确认；规则内单据直接流转至财务审核</td></tr>
+        <tr><td>审计标记</td><td>免确认单全部标记「免确认」，财务可一键复查</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 320px;min-width:240px;">
+        <div style="background:#FDECEC;border:1px solid #F5C2C2;border-radius:10px;padding:10px 14px;font-size:13px;">
+          <b style="color:#C0392B;">红线：资金支付类动作永远不设免确认</b>
+          <div class="note" style="margin-top:4px;">报销审核只免「提交流转确认」，实际支付 / 出款环节必须有财务人工审批，两层职责分离。</div>
+        </div>
+        <ul style="font-size:13px;margin-top:10px;">
+          <li>员工仍可随时查看处理进度（钉钉消息卡片）；</li>
+          <li>规则调整走平台「免确认规则配置」，无需改代码。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="sc-2">
+    <h3>场景二 · 菜品调整 <a class="row-act" data-top="1" style="float:right;font-size:12px;font-weight:400;">↑ 顶部</a> <span class="tag"><span class="badge b-real">真实在用</span> 信息中心</span></h3>
+    <div class="exec-flow">
+      <div class="exec-step"><b>① 用户 Agent 发起</b>"把 XX 菜品下架 / 调价 / 改名"</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>② Agent 解析确认</b>识别意图与参数（菜品 ID / 调整类型 / 生效时间）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>③ 调用业务系统</b>菜品系统 API 完成调整（已对接，无需人工进后台）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>④ 自动反馈</b>结果回 Agent / 钉钉（成功 / 失败原因 + 生效信息）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>⑤ 变更留痕</b>写入审计 + 同步门店 / 渠道菜单</div>
+    </div>
+    <div class="grid2">
+      <div style="overflow-x:auto;flex:1 1 430px;min-width:280px;">
+      <table>
+        <tr><th style="width:22%">配置项</th><th>内容</th></tr>
+        <tr><td>用户入口</td><td>钉钉内 Agent（智能助理 / 机器人）</td></tr>
+        <tr><td>执行体</td><td>百炼智能体（工具调用 + 意图解析 + 参数校验）</td></tr>
+        <tr><td>业务系统</td><td>菜品 / 菜单业务系统 API（查询、新增、修改、上下架、生效时间）</td></tr>
+        <tr><td>权限控制</td><td>仅菜品管理员角色可发起；高影响变更（全部门店）二次确认</td></tr>
+        <tr><td>反馈方式</td><td>调整结果 + 生效信息回 Agent / 钉钉消息卡片</td></tr>
+        <tr><td>审计</td><td>变更前后值、操作人、时间全记录，可回溯</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 380px;min-width:260px;">
+        <h4 style="margin:6px 0 6px;">这个场景回答了什么问题</h4>
+        <ul style="font-size:13px;">
+          <li>运营不再需要登录后台逐页操作，一句话完成改价、下架、改名；</li>
+          <li>Agent 对接业务系统 = 从"聊天"到"办事"，是数字员工最有代表性的能力；</li>
+          <li>变更留痕 + 权限校验，避免误操作，审计可追责。</li>
+        </ul>
+        <div class="note" style="margin-top:8px;">要点：Agent 侧的每个工具调用都通过平台连接器转发，统一记账与留痕。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="background:#FFFBF5;border:1px solid #F2E3C8;">
+    <h3>菜品调整权限与冲突规则（决策已定稿）<span class="tag">grill-me 审核采纳 · 归运营中心</span></h3>
+    <div class="grid2">
+      <div style="flex:1 1 420px;min-width:270px;">
+      <table>
+        <tr><th style="width:30%">角色</th><th>可执行动作</th></tr>
+        <tr><td>菜品管理员</td><td>发起调价 / 改名 / 上下架（单店或指定门店）</td></tr>
+        <tr><td>运营负责人</td><td>审批高影响变更（全部门店 / 下架 / 大额调价）</td></tr>
+        <tr><td>平台审计</td><td>全部变更留痕（前后值 / 操作人 / 时间）</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 320px;min-width:240px;">
+        <h4 style="margin:4px 0 6px;">冲突与防误操作规则</h4>
+        <ul style="font-size:13px;">
+          <li>同菜品同一生效时间重复变更 → 直接拒绝；</li>
+          <li>生效时间处于营业高峰前 2h 内的变更 → 强制人工确认；</li>
+          <li>下架操作默认全部门店需审批，单店可放宽；</li>
+          <li>Agent 每次调整先做「权限 + 冲突」双重校验再调 API。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px;">规则机制说明：免确认与权限冲突规则为「报销 / 菜品」已定稿示例；采购情报、门店巡检、稽查排班的业务规则（数据源准入、告警阈值、排班约束）按各自业务配置，统一由平台配置中心收口，详见《研发对接清单》第 8 章。</div>
+  </div>
+
+  <div class="panel" id="sc-3">
+    <h3>场景三 · 采购情报助手 <a class="row-act" data-top="1" style="float:right;font-size:12px;font-weight:400;">↑ 顶部</a> <span class="tag"><span class="badge b-real">真实在用</span> 采购中心</span></h3>
+    <div class="exec-flow">
+      <div class="exec-step"><b>① 数据接入</b>持续收集采购关注品牌的 价格 / 走势 / 供应商 / 供应情况</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>② Agent + Skill 加工</b>已建成的 agent 与 skill：查询、汇总、对比分析</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>③ 报告生成</b>自动产出行情报告 / 供应商报告 / 采购简报</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>④ 交付与自助</b>钉钉推送 + 采购人员自助查询 / 追问</div>
+    </div>
+    <div class="grid2">
+      <div style="overflow-x:auto;flex:1 1 430px;min-width:280px;">
+      <table>
+        <tr><th style="width:22%">配置项</th><th>内容</th></tr>
+        <tr><td>数据源</td><td>品牌价格库 / 价格走势 / 供应商名录 / 供应情况（持续采集）</td></tr>
+        <tr><td>执行体</td><td>百炼 Agent + 已发布 Skill（查询 / 汇总 / 出报告）</td></tr>
+        <tr><td>输出</td><td>行情周报 / 供应商报告 / 采购简报（钉钉推送 + 自助查询）</td></tr>
+        <tr><td>知识库</td><td>历史价格、采购合同价、供应商资质（RAG 可溯源）</td></tr>
+        <tr><td>受众</td><td>采购人员、品类负责人</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 380px;min-width:260px;">
+        <h4 style="margin:6px 0 6px;">这个场景回答了什么问题</h4>
+        <ul style="font-size:13px;">
+          <li>采购不再逐站点查价、手工汇总——Agent 一次问答给到价格、走势、供应全貌；</li>
+          <li>skill 沉淀为可复用能力，报告产出从"小时级"到"分钟级"；</li>
+          <li>平台统一记账：每次查询 / 报告都是可度量的数字员工工作量。</li>
+        </ul>
+        <div class="note" style="margin-top:8px;">已建成：Agent + Skill 已发布，可出报告 / 查询 / 汇总信息。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="sc-4">
+    <h3>场景四 · 门店巡检助手 <a class="row-act" data-top="1" style="float:right;font-size:12px;font-weight:400;">↑ 顶部</a> <span class="tag"><span class="badge b-real">真实在用</span> 运营域</span></h3>
+    <div class="exec-flow">
+      <div class="exec-step"><b>① 多系统对接</b>已对接所有可监控系统（设备 / 能耗 / 安防 / 环境等监控信息）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>② 统一接入</b>监控信息统一汇入巡检中枢，归一化处理</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>③ 规则巡检</b>按规则自动巡检，异常识别与分级</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>④ 统一管理</b>统一看板 + 异常告警 + 整改闭环（不再分散登录各系统）</div>
+    </div>
+    <div class="grid2">
+      <div style="overflow-x:auto;flex:1 1 430px;min-width:280px;">
+      <table>
+        <tr><th style="width:22%">配置项</th><th>内容</th></tr>
+        <tr><td>接入范围</td><td>已对接的全部可监控系统（设备 / 能耗 / 安防 / 环境等）</td></tr>
+        <tr><td>执行体</td><td>百炼智能体（数据归一 + 规则引擎 + 告警判定）</td></tr>
+        <tr><td>输出</td><td>统一巡检看板 / 异常告警 / 整改任务（钉钉推送）</td></tr>
+        <tr><td>闭环</td><td>异常识别 → 告警 → 派单整改 → 复核关闭</td></tr>
+        <tr><td>受益方</td><td>门店运营、区域管理、设备维保</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 380px;min-width:260px;">
+        <h4 style="margin:6px 0 6px;">这个场景回答了什么问题</h4>
+        <ul style="font-size:13px;">
+          <li>从"人跑多个系统看监控"到"一个入口统管全部门店监控"；</li>
+          <li>异常自动识别、分级告警、整改闭环，巡检覆盖率和时效显著提升；</li>
+          <li>监控信息统一接入 = 后续所有门店数字化能力的数据底座。</li>
+        </ul>
+        <div class="note" style="margin-top:8px;">已建成：所有可监控系统已对接，监控信息统一接入本系统管理。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="sc-5">
+    <h3>场景五 · 稽查智能排班助手 <a class="row-act" data-top="1" style="float:right;font-size:12px;font-weight:400;">↑ 顶部</a> <span class="tag"><span class="badge b-real">真实在用</span> 内审部</span></h3>
+    <div class="exec-flow">
+      <div class="exec-step"><b>① 规则输入</b>稽查人员技能 / 资质 / 工时上限 / 法规合规等复杂约束</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>② 排班引擎</b>复杂规则求解，自动给出最佳排班方案</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step hot"><b>③ 排班表生成</b>输出最优稽查排班表（覆盖 / 公平 / 合规多目标）</div>
+      <div class="exec-arrow">→</div>
+      <div class="exec-step"><b>④ 复核发布</b>负责人复核调整 → 发布到钉钉</div>
+    </div>
+    <div class="grid2">
+      <div style="overflow-x:auto;flex:1 1 430px;min-width:280px;">
+      <table>
+        <tr><th style="width:22%">配置项</th><th>内容</th></tr>
+        <tr><td>输入</td><td>人员技能 / 资质 / 工时上限 / 法规合规 / 门店覆盖要求</td></tr>
+        <tr><td>执行体</td><td>百炼智能体 + 排班规则引擎（复杂规则求解）</td></tr>
+        <tr><td>输出</td><td>最佳稽查排班表（人工复核后发布）</td></tr>
+        <tr><td>审核节点</td><td>排班发布前负责人复核，规则变更走平台配置</td></tr>
+        <tr><td>受益方</td><td>稽查团队、门店合规管理</td></tr>
+      </table>
+      </div>
+      <div style="flex:1 1 380px;min-width:260px;">
+        <h4 style="margin:6px 0 6px;">这个场景回答了什么问题</h4>
+        <ul style="font-size:13px;">
+          <li>排班从"人工反复试错"到"复杂规则一次求解"，兼顾覆盖与公平；</li>
+          <li>约束条件集中配置、可审计，规则变了改配置不改逻辑；</li>
+          <li>人机协作：机器给最优解，负责人保留最终发布权。</li>
+        </ul>
+        <div class="note" style="margin-top:8px;">已建成：通过复杂规则给出最佳排班表。口径说明：今日处理次数含排班生成、调整与查询。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>五个场景在平台上的生命周期位置 <span class="tag">与平台各模块的对应关系</span></h3>
+    <div style="overflow-x:auto;"><table>
+      <tr><th>场景</th><th>数字员工</th><th>监控中心</th><th>效能分析</th></tr>
+      <tr><td>智能报销</td><td>小财 · 智能报销助手（v2.1）</td><td>提单成功率 / 介入率 / 单均耗时</td><td>节省单据处理工时</td></tr>
+      <tr><td>菜品调整</td><td>小营 · 菜品调整助手（v1.0）</td><td>调用量 / 成功率 / 变更审计</td><td>节省后台操作工时</td></tr>
+      <tr><td>采购情报</td><td>小采 · 采购情报助手（v1.0）</td><td>数据更新频率 / 查询量 / 报告数</td><td>节省市场调研工时</td></tr>
+      <tr><td>门店巡检</td><td>小巡 · 门店巡检助手（v1.0）</td><td>巡检覆盖率 / 异常闭环率</td><td>节省人工巡检工时</td></tr>
+      <tr><td>稽查排班</td><td>小稽 · 稽查排班助手（v1.0）</td><td>规则命中率 / 排班调整率</td><td>节省排班编制工时</td></tr>
+    </table></div>
+    <div class="note">演示数据：让管理层看到"五个真实场景 × 平台模块"如何一一对应。配套《研发对接清单》已交付（百炼建应用 → 钉钉 Stream → 汇联易 OpenAPI → 菜品系统对接的具体步骤与字段映射）。</div>
+  </div>
+</section>
+
+<!-- ============ 监控中心 ============ -->
+<section class="page" id="p4">
+  <div class="banner">
+    <h2>运行监控中心</h2>
+    <p>实时跟踪任务执行、成功率、异常与人工介入；异常自动告警并进入处置队列。</p>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="t">今日执行</div><div class="v" id="mon-today">663</div><div class="s">次（实时滚动）</div></div>
+    <div class="kpi"><div class="t">执行成功率</div><div class="v up">96.8%</div><div class="s">目标 ≥95%</div></div>
+    <div class="kpi"><div class="t">人工介入</div><div class="v" style="color:var(--warn)">23</div><div class="s">介入率 1.8%</div></div>
+    <div class="kpi"><div class="t">异常事件</div><div class="v" style="color:var(--red)">17</div><div class="s">15 已自动恢复 · 2 待处理</div></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>实时告警 <span class="tag">近 1 小时</span></h3>
+      <div class="alert al-item" data-state="pending">小账 · 自动对账异常分析 · 数据源连接超时 <span class="tm">09:41 · 已自动重试 2 次，待人工确认</span><span class="row-actions" style="margin-top:4px;"><a class="row-act" data-act="handle">处理</a><a class="row-act del" data-act="ignore">忽略</a></span></div>
+      <div class="alert al-item done" data-state="done">小营 · 运营日报生成 · 门店销售接口返回字段缺失 <span class="tm">09:35 · 已自动恢复</span></div>
+      <div class="alert al-item red" data-state="pending">小巡 · 门店巡检助手 · 连续 5 次指标轮询超时（设备网关波动）<span class="tm">09:28 · 需调整限流策略</span><span class="row-actions" style="margin-top:4px;"><a class="row-act" data-act="handle">处理</a><a class="row-act del" data-act="ignore">忽略</a></span></div>
+      <div class="alert al-item" data-state="pending">小评 · 服务评价分析 · 差评归类置信度低于阈值 8 单 <span class="tm">09:15 · 转人工复核</span><span class="row-actions" style="margin-top:4px;"><a class="row-act" data-act="handle">处理</a><a class="row-act del" data-act="ignore">忽略</a></span></div>
+      <div class="alert al-item done" data-state="done">小财 · 智能报销助手 · 汇联易回调延迟 <span class="tm">08:52 · 已自动恢复</span></div>
+      <div class="note">演示数据：告警内容为原型示意。</div>
+    </div>
+    <div class="panel">
+      <h3>执行流水 <span class="tag">最近 10 条</span></h3>
+      <div style="overflow-x:auto;"><table>
+        <thead><tr><th>时间</th><th>数字员工</th><th>任务</th><th>结果</th><th>耗时</th></tr></thead>
+        <tbody id="mon-log">
+          <tr><td>09:47:05</td><td>小财 · 智能报销助手</td><td>提交报销单 #BX-88215 至汇联易（员工已确认）</td><td class="ok-row">成功</td><td>8.4s</td></tr>
+          <tr><td>09:46:41</td><td>小营 · 菜品调整助手</td><td>调整「藤椒酸菜鱼」为会员价并反馈（变更已留痕）</td><td class="ok-row">成功</td><td>3.1s</td></tr>
+          <tr><td>09:46:12</td><td>小巡 · 门店巡检助手</td><td>巡检 广州-天河店 12 项监控指标正常</td><td class="ok-row">成功</td><td>6.2s</td></tr>
+          <tr><td>09:45:58</td><td>小营 · 运营日报生成</td><td>生成 09-16 门店运营日报</td><td class="ok-row">成功</td><td>18.6s</td></tr>
+          <tr><td>09:45:21</td><td>小采 · 采购情报助手</td><td>生成「牛肉类品牌行情周报」并推送</td><td class="ok-row">成功</td><td>14.2s</td></tr>
+          <tr><td>09:44:47</td><td>小账 · 自动对账异常分析</td><td>对账 09-16 银行流水（招商）</td><td class="ok-row">成功</td><td>12.3s</td></tr>
+          <tr><td>09:44:02</td><td>小稽 · 稽查排班助手</td><td>生成 9 月第 4 周稽查排班表（待复核）</td><td class="ok-row">成功</td><td>23.5s</td></tr>
+          <tr><td>09:43:36</td><td>小会 · 会员报告生成</td><td>生成 9 月会员消费分析报告</td><td class="ok-row">成功</td><td>16.7s</td></tr>
+          <tr><td>09:42:55</td><td>小评 · 服务评价分析</td><td>汇总门店服务评价并分析（差评 2 条已推送店长）</td><td class="ok-row">成功</td><td>9.8s</td></tr>
+          <tr><td>09:42:11</td><td>小财 · 智能报销助手</td><td>物业账单 #BZ-0917 费用转换完成，待确认</td><td class="ok-row">成功</td><td>5.6s</td></tr>
+          <tr><td>09:41:37</td><td>小账 · 自动对账异常分析</td><td>流水异常 3 笔，已标记待核</td><td class="err-row">异常→已恢复</td><td>11.0s</td></tr>
+          <tr><td>09:40:58</td><td>小营 · 运营日报生成</td><td>生成 09-16 采购日报</td><td class="ok-row">成功</td><td>15.9s</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">演示数据：执行流水为原型示意。</div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">数字员工看板 · MVP 可交互原型 v6（总览·数字员工·效能整合） · 演示数据 · 2026-09-23</div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- 页面切换（p7/p11 为二级页，经 p0 进入） ---------- */
+  var navBtns = document.querySelectorAll('#nav button');
+  function showPage(id){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+    var el = document.getElementById(id);
+    if(el) el.classList.add('on');
+    var navId = (id === 'p7' || id === 'p11') ? 'p0' : id;
+    navBtns.forEach(function(x){x.classList.remove('on');});
+    navBtns.forEach(function(x){ if(x.getAttribute('data-page') === navId) x.classList.add('on'); });
+    setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 60);
+  }
+  navBtns.forEach(function(b){
+    b.addEventListener('click', function(){ showPage(b.getAttribute('data-page')); });
+  });
+
+  /* ---------- 图表公共 ---------- */
+  var charts = {};
+  function mk(id, option){
+    var el = document.getElementById(id);
+    if(!el) return;
+    if(typeof echarts === 'undefined'){
+      el.innerHTML = '<div style="padding:16px;color:#5B6472;font-size:13px;">图表库加载失败，已回退为文字说明（示例数据见正文）。</div>';
+      return;
+    }
+    var c = echarts.init(el);
+    c.setOption(option);
+    charts[id] = c;
+  }
+  window.addEventListener('resize', function(){
+    Object.keys(charts).forEach(function(k){ charts[k] && charts[k].resize(); });
+    Object.keys(dcharts).forEach(function(k){ dcharts[k] && dcharts[k].resize(); });
+  });
+
+  var axis = { color:'#5B6472', fontSize:11 };
+  var split = { line:{ color:'#EDF0F5' } };
+
+  /* 员工目录 */
+  var emps = [
+    {name:'小营 · 菜品调整助手', group:'信息中心', dept:'信息中心 · Agent→业务系统', av:'菜', cls:'teal', stat:'运行中', badge:'b-run', runs:'1,260 次', ok:'97.2%', hrs:'320h', ver:'v1.0', real:true, scene:'sc-2', src:'研发对接清单·菜品场景', created:'2026-09-05', owner:'陈×（运营）'},
+    {name:'小巡 · 门店巡检助手', group:'信息中心', dept:'信息中心 · 监控系统统一接入', av:'巡', cls:'green', stat:'运行中', badge:'b-run', runs:'3,150 次', ok:'93.4%', hrs:'1,120h', ver:'v1.0', real:true, scene:'sc-4', src:'门店监控系统对接', created:'2026-08-30', owner:'门店运营组'},
+    {name:'小会 · 会员报告生成', group:'信息中心', dept:'信息中心 · 会员数据→报告', av:'会', cls:'teal', stat:'运行中', badge:'b-run', runs:'1,850 次', ok:'96.3%', hrs:'260h', ver:'v1.0', src:'会员数据报告（规划）', created:'2026-09-12', owner:'会员运营组'},
+    {name:'小财 · 智能报销助手', group:'财务中心', dept:'财务中心 · 物业账单→汇联易', av:'报', cls:'', stat:'运行中', badge:'b-run', runs:'8,930 次', ok:'98.6%', hrs:'780h', ver:'v2.1', real:true, scene:'sc-1', src:'研发对接清单·报销场景', created:'2026-08-20', owner:'王×（财务数字化）'},
+    {name:'小账 · 自动对账异常分析', group:'财务中心', dept:'财务中心 · 流水对账与异常分析', av:'账', cls:'', stat:'运行中', badge:'b-run', runs:'6,150 次', ok:'99.5%', hrs:'620h', ver:'v1.5', src:'对账中心（演示）', created:'2026-08-25', owner:'张×（财务）'},
+    {name:'小采 · 采购情报助手', group:'采购中心', dept:'采购中心 · Agent+Skill→报告', av:'采', cls:'amber', stat:'运行中', badge:'b-run', runs:'2,860 次', ok:'95.8%', hrs:'640h', ver:'v1.0', real:true, scene:'sc-3', src:'采购 Agent+Skill（已建成）', created:'2026-08-28', owner:'刘×（采购）'},
+    {name:'小稽 · 稽查排班助手', group:'内审部', dept:'内审部 · 复杂规则排班', av:'稽', cls:'', stat:'运行中', badge:'b-run', runs:'420 次', ok:'92.1%', hrs:'180h', ver:'v1.0', real:true, scene:'sc-5', src:'稽查排班规则引擎', created:'2026-09-10', owner:'陈×（内审）'},
+    {name:'小营 · 运营日报生成', group:'运营中心', dept:'运营中心 · 门店日报', av:'日', cls:'teal', stat:'运行中', badge:'b-run', runs:'7,240 次', ok:'97.8%', hrs:'540h', ver:'v2.0', src:'运营日报（演示）', created:'2026-08-18', owner:'运营数字化'},
+    {name:'小评 · 服务评价分析', group:'运营中心', dept:'运营中心 · 服务评价分析', av:'评', cls:'green', stat:'运行中', badge:'b-run', runs:'2,140 次', ok:'95.6%', hrs:'380h', ver:'v1.0', src:'评价数据（演示）', created:'2026-09-08', owner:'运营数字化'}
+  ];
+  function renderEmps(){
+    var wrap = document.getElementById('emp-list');
+    if(!wrap) return;
+    var order = ['信息中心','财务中心','采购中心','内审部','运营中心'];
+    var groups = {};
+    emps.forEach(function(e, i){ var g = e.group || '其他'; (groups[g] = groups[g] || []).push({e:e, i:i}); });
+    var html = order.map(function(g){
+      var list = groups[g]; if(!list || !list.length) return '';
+      var cards = list.map(function(item){
+        var e = item.e, i = item.i, ops = '';
+        if(e.real){ ops += '<a class="row-act" data-act="scene" data-scene="'+(e.scene||'sc-1')+'" data-i="'+i+'">场景演示 →</a> '; }
+        ops += '<a class="row-act" data-act="detail" data-i="'+i+'">运行与绩效</a>';
+        return '<div class="emp '+e.cls+'">' +
+          '<div class="head"><div class="avatar">'+e.av+'</div><div><div class="nm">'+e.name+'</div><div class="dept">'+e.dept+' · '+e.stat+' · 版本 '+e.ver+'</div></div></div>' +
+          '<span class="badge '+e.badge+'">'+e.stat+'</span>'+(e.real ? ' <span class="badge b-real">真实在用</span>' : '') +
+          '<div class="stats"><span>累计执行 <b>'+e.runs+'</b></span><span>成功率 <b>'+e.ok+'</b></span><span>节省 <b>'+e.hrs+'</b></span></div>' +
+          '<div class="emp-src">来源：'+(e.src||'场景库')+' · 创建 '+(e.created||'2026-08-20')+' · 负责人 '+(e.owner||'王×')+'</div>' +
+          '<div class="row-actions">'+ops+'</div>' +
+          '</div>';
+      }).join('');
+      return '<div style="width:100%;"><h3 style="font-size:15px;color:#123A6B;margin:14px 0 8px;border-left:4px solid var(--primary);padding-left:10px;">'+g+' <span style="font-size:12px;color:var(--sub);font-weight:400;">'+list.length+' 名</span></h3><div style="display:flex;gap:14px;flex-wrap:wrap;">'+cards+'</div></div>';
+    }).join('');
+    wrap.innerHTML = html;
+    var kt = document.getElementById('kpi-emp-total');
+    if(kt) kt.textContent = emps.length;
+    var kr = document.getElementById('kpi-emp-real');
+    if(kr) kr.textContent = emps.filter(function(x){ return x.real; }).length;
+  }
+  renderEmps();  renderEmps();
+
+  /* 效能 */
+  mk('c-hours', {
+    tooltip:{ trigger:'axis', confine:true, backgroundColor:'rgba(255,255,255,.96)', borderColor:'#E3E8EF', textStyle:{color:'#333',fontSize:11} },
+    grid:{ left:44, right:18, top:26, bottom:26, containLabel:true },
+    xAxis:{ type:'category', data:['1月','2月','3月','4月','5月','6月','7月','8月','9月'], axisLabel:axis },
+    yAxis:{ type:'value', name:'小时', nameTextStyle:{color:'#5B6472',fontSize:11}, axisLabel:axis, splitLine:split },
+    series:[{ type:'line', smooth:true, data:[290,387,484,629,726,774,629,484,436],
+      itemStyle:{ color:'#0E9F8A' }, lineStyle:{ width:3, color:'#0E9F8A' },
+      areaStyle:{ color:'rgba(14,159,138,.12)' },
+      label:{ show:true, fontSize:10, color:'#5B6472' } }]
+  });
+
+  mk('c-top', {
+    tooltip:{ trigger:'axis', confine:true, backgroundColor:'rgba(255,255,255,.96)', borderColor:'#E3E8EF', textStyle:{color:'#333',fontSize:11} },
+    grid:{ left:110, right:40, top:12, bottom:24, containLabel:true },
+    xAxis:{ type:'value', axisLabel:axis, splitLine:split },
+    yAxis:{ type:'category', inverse:true, axisLabel:{color:'#1A1B1C',fontSize:11}, data:['门店巡检','智能报销','采购情报','自动对账','运营日报','服务评价','菜品调整','会员报告'] },
+    series:[{ type:'bar', barWidth:16, data:[1120,780,640,620,540,380,320,260],
+      itemStyle:{ color:'#1F6FEB', borderRadius:[0,6,6,0] },
+      label:{ show:true, position:'right', fontSize:11, color:'#5B6472', formatter:'{c}h' } }]
+  });
+
+  /* ---------- 数字员工详情（二级页） ---------- */
+  var perfData = {
+    '小营 · 菜品调整助手': {today:86, cost:0.8, intervene:2.4, score:95, grade:'A'},
+    '小巡 · 门店巡检助手': {today:128, cost:0.2, intervene:2.8, score:93, grade:'A'},
+    '小会 · 会员报告生成': {today:18, cost:0.3, intervene:1.0, score:96, grade:'A'},
+    '小财 · 智能报销助手': {today:132, cost:0.6, intervene:1.8, score:97, grade:'S'},
+    '小账 · 自动对账异常分析': {today:96, cost:0.5, intervene:1.2, score:99, grade:'S'},
+    '小采 · 采购情报助手': {today:45, cost:0.4, intervene:1.5, score:96, grade:'A'},
+    '小稽 · 稽查排班助手': {today:6, cost:1.2, intervene:3.5, score:90, grade:'B'},
+    '小营 · 运营日报生成': {today:128, cost:0.4, intervene:0.5, score:97, grade:'S'},
+    '小评 · 服务评价分析': {today:24, cost:0.2, intervene:2.2, score:94, grade:'A'}
+  };
+  var curEmp = null;
+  var dcharts = {};
+  function safeMk(id, option){
+    var el = document.getElementById(id);
+    if(!el) return;
+    if(typeof echarts === 'undefined'){ el.innerHTML = '<div style="padding:16px;color:#5B6472;font-size:13px;">图表库加载失败，已回退为文字说明。</div>'; return; }
+    if(dcharts[id]) dcharts[id].dispose();
+    var c = echarts.init(el);
+    c.setOption(option);
+    dcharts[id] = c;
+  }
+  function genTrend(total){
+    var w = [0.06,0.08,0.10,0.13,0.15,0.16,0.13,0.10,0.09];
+    return w.map(function(x){ return Math.round(total*x); });
+  }
+  function numOf(s){ return parseInt(String(s||'').replace(/[^\d]/g,''),10)||0; }
+
+  /* 首页 · 成本趋势：汇总全部数字员工的月度总成本（元） */
+  (function(){
+    var agg = [0,0,0,0,0,0,0,0,0];
+    emps.forEach(function(e){
+      var p = perfData[e.name]; if(!p) return;
+      var m = genTrend(numOf(e.runs));
+      for(var k=0;k<9;k++){ agg[k] += m[k] * p.cost; }
+    });
+    agg = agg.map(function(x){ return Math.round(x); });
+    mk('c-cost', {
+      tooltip:{ trigger:'axis', confine:true, backgroundColor:'rgba(255,255,255,.96)', borderColor:'#E3E8EF', textStyle:{color:'#333',fontSize:11}, formatter:function(ps){ return ps[0].axisValue + '<br/>总成本：¥' + (ps[0].data||0).toLocaleString(); } },
+      grid:{ left:52, right:18, top:26, bottom:26, containLabel:true },
+      xAxis:{ type:'category', data:['1月','2月','3月','4月','5月','6月','7月','8月','9月'], axisLabel:axis },
+      yAxis:{ type:'value', name:'元', nameTextStyle:{color:'#5B6472',fontSize:11}, axisLabel:axis, splitLine:split },
+      series:[{ type:'bar', barWidth:24, data:agg, itemStyle:{ color:'#F0A63A', borderRadius:[6,6,0,0] },
+        label:{ show:true, position:'top', fontSize:10, color:'#5B6472', formatter:function(pp){ return '¥' + pp.value; } } }]
+    });
+  })();
+
+  function showDetail(i){
+    var e = emps[i]; if(!e) return;
+    curEmp = e;
+    var p = perfData[e.name] || null;
+    var hasData = !!(p && e.runs && e.runs !== '—');
+    document.getElementById('d-name').textContent = e.name;
+    document.getElementById('d-meta').textContent = e.dept + ' · ' + e.stat + ' · 版本 ' + e.ver + (e.real ? ' · 真实在用 · 数据来自平台记账' : ' · 演示口径');
+    document.getElementById('d-runs').textContent = e.runs;
+    document.getElementById('d-ok').textContent = e.ok;
+    document.getElementById('d-hrs').textContent = e.hrs;
+    document.getElementById('d-today').textContent = hasData ? p.today.toLocaleString() : '—';
+    var n = numOf(e.runs), hh = numOf(e.hrs);
+    document.getElementById('btn-go-scene').style.display = e.real ? 'inline-block' : 'none';
+    document.getElementById('btn-go-scene').setAttribute('data-scene', e.scene || 'sc-1');
+    window.__curEmp = e;
+    showPage('p11');
+    window.scrollTo(0,0);
+    /* 先显示页面再初始化图表，避免在隐藏容器（宽 0）上渲染导致空白 */
+    safeMk('c-detail-trend', {
+      tooltip:{ trigger:'axis', confine:true, backgroundColor:'rgba(255,255,255,.96)', borderColor:'#E3E8EF', textStyle:{color:'#333',fontSize:11} },
+      grid:{ left:44, right:16, top:26, bottom:26, containLabel:true },
+      xAxis:{ type:'category', data:['1月','2月','3月','4月','5月','6月','7月','8月','9月'], axisLabel:axis },
+      yAxis:{ type:'value', axisLabel:axis, splitLine:split },
+      series:[{ type:'bar', data:genTrend(n), itemStyle:{ color:'#1F6FEB', borderRadius:[6,6,0,0] }, label:{ show:true, position:'top', fontSize:10, color:'#5B6472' } }]
+    });
+    safeMk('c-detail-hours', {
+      tooltip:{ trigger:'axis', confine:true, backgroundColor:'rgba(255,255,255,.96)', borderColor:'#E3E8EF', textStyle:{color:'#333',fontSize:11} },
+      grid:{ left:40, right:16, top:26, bottom:26, containLabel:true },
+      xAxis:{ type:'category', data:['1月','2月','3月','4月','5月','6月','7月','8月','9月'], axisLabel:axis },
+      yAxis:{ type:'value', name:'小时', nameTextStyle:{color:'#5B6472',fontSize:11}, axisLabel:axis, splitLine:split },
+      series:[{ type:'line', smooth:true, data:genTrend(hh), itemStyle:{ color:'#0E9F8A' }, lineStyle:{ width:3, color:'#0E9F8A' }, areaStyle:{ color:'rgba(14,159,138,.12)' } }]
+    });
+    var costMonthly = genTrend(n).map(function(x){ return Math.round(x * ((p && p.cost) || 0)); });
+    safeMk('c-detail-cost', {
+      tooltip:{ trigger:'axis', confine:true, backgroundColor:'rgba(255,255,255,.96)', borderColor:'#E3E8EF', textStyle:{color:'#333',fontSize:11}, formatter:function(ps){ return ps[0].axisValue + '<br/>成本：¥' + (ps[0].data||0).toLocaleString(); } },
+      grid:{ left:52, right:16, top:26, bottom:26, containLabel:true },
+      xAxis:{ type:'category', data:['1月','2月','3月','4月','5月','6月','7月','8月','9月'], axisLabel:axis },
+      yAxis:{ type:'value', name:'元', nameTextStyle:{color:'#5B6472',fontSize:11}, axisLabel:axis, splitLine:split },
+      series:[{ type:'bar', barWidth:24, data:costMonthly, itemStyle:{ color:'#F0A63A', borderRadius:[6,6,0,0] },
+        label:{ show:true, position:'top', fontSize:10, color:'#5B6472', formatter:function(pp){ return '¥' + pp.value; } } }]
+    });
+  }
+  window.showDetail = showDetail;
+
+  /* 供增强脚本调用 */
+  window.__emp = { list: emps, render: renderEmps };
+
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var pad=function(n){return (n<10?'0':'')+n;};
+  function nowH(){var d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());}
+
+  /* ---- toast ---- */
+  var toastBox=null;
+  function toast(msg){
+    if(!toastBox){toastBox=document.createElement('div');toastBox.className='toast-box';document.body.appendChild(toastBox);}
+    var t=document.createElement('div');t.className='toast';t.textContent=msg;toastBox.appendChild(t);
+    setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},350);},2600);
+  }
+
+  /* ---- modal ---- */
+  function openModal(html){
+    var ov=document.createElement('div');ov.className='modal-overlay';
+    ov.innerHTML='<div class="modal">'+html+'</div>';
+    ov.addEventListener('click',function(e){if(e.target===ov) ov.remove();});
+    document.body.appendChild(ov);
+    return ov;
+  }
+
+
+
+
+  /* ---- 工作流上传（单文件：再次上传自动覆盖前一张） ---- */
+  var wfDrop=document.getElementById('wf-drop');
+  if(wfDrop){
+    var wfInput=document.getElementById('wf-input');
+    var wfEmpty=document.getElementById('wf-empty');
+    var wfPrev=document.getElementById('wf-preview');
+    var wfUrl=null;
+    var fmtSize=function(b){ return b<1024 ? (b+' B') : (b<1048576 ? (b/1024).toFixed(0)+' KB' : (b/1048576).toFixed(1)+' MB'); };
+    var escHtml=function(s){ return String(s).replace(/[&<>"]/g,function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); };
+    var clearWf=function(){
+      if(wfUrl){ URL.revokeObjectURL(wfUrl); wfUrl=null; }
+      wfPrev.innerHTML=''; wfPrev.style.display='none'; wfEmpty.style.display='block';
+    };
+    var renderWf=function(file){
+      if(wfUrl){ URL.revokeObjectURL(wfUrl); }
+      wfUrl=URL.createObjectURL(file);
+      var isImg=/^image\//.test(file.type) || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(file.name);
+      var isPdf=/pdf$/i.test(file.type) || /\.pdf$/i.test(file.name);
+      var nm=escHtml(file.name), sz=fmtSize(file.size), html='';
+      if(isImg){ html+='<img class="wf-media" alt="'+nm+'" src="'+wfUrl+'">'; }
+      else if(isPdf){ html+='<object class="wf-media" data="'+wfUrl+'" type="application/pdf" style="width:100%;height:460px;"><div style="padding:20px;color:#5B6472;font-size:13px;">当前浏览器不支持内嵌 PDF 预览，请点击下方「在新标签打开」。</div></object>'; }
+      if(isImg||isPdf){ html+='<div class="wf-filecard"><div class="fi">'+(isPdf?'PDF':'IMG')+'</div><div class="fm"><div class="n">'+nm+'</div><div class="s">'+sz+'</div></div></div>'; }
+      html+='<div class="wf-actions"><button class="wf-mini" id="wf-reupload">重新上传</button><a class="wf-mini" href="'+wfUrl+'" target="_blank" rel="noopener">在新标签打开</a><button class="wf-mini" id="wf-remove">移除</button></div>';
+      wfEmpty.style.display='none';
+      wfPrev.style.display='flex';
+      wfPrev.innerHTML=html;
+      var ru=document.getElementById('wf-reupload'); if(ru){ ru.addEventListener('click',function(ev){ ev.stopPropagation(); wfInput.click(); }); }
+      var rm=document.getElementById('wf-remove'); if(rm){ rm.addEventListener('click',function(ev){ ev.stopPropagation(); wfInput.value=''; clearWf(); toast('【演示】已移除工作流文件'); }); }
+    };
+    wfInput.addEventListener('change',function(){
+      if(wfInput.files && wfInput.files[0]){ renderWf(wfInput.files[0]); toast('【演示】已上传工作流：'+wfInput.files[0].name); }
+    });
+    wfDrop.addEventListener('click',function(){ if(wfPrev.style.display!=='none') return; wfInput.click(); });
+    ['dragenter','dragover'].forEach(function(ev){ wfDrop.addEventListener(ev,function(e){ e.preventDefault(); wfDrop.classList.add('drag'); }); });
+    ['dragleave','drop'].forEach(function(ev){ wfDrop.addEventListener(ev,function(e){ e.preventDefault(); wfDrop.classList.remove('drag'); }); });
+    wfDrop.addEventListener('drop',function(e){
+      var f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f){ renderWf(f); toast('【演示】已上传工作流：'+f.name); }
+    });
+  }
+
+  /* ---- 数字员工列表：真实员工 -> 场景演示；全部员工 -> 运行与绩效详情 ---- */
+  var empList=document.getElementById('emp-list');
+  if(empList){empList.addEventListener('click',function(e){
+    var a=e.target.closest?e.target.closest('a[data-act]'):null;
+    if(!a||!empList.contains(a)) return;
+    var act=a.getAttribute('data-act');
+    if(act==='scene'){
+      showPage('p7');
+      var sc=a.getAttribute('data-scene');
+      setTimeout(function(){
+        var t=document.getElementById(sc);
+        if(t) t.scrollIntoView({behavior:'smooth', block:'start'});
+      }, 80);
+    } else if(act==='detail'){
+      if(window.showDetail) window.showDetail(parseInt(a.getAttribute('data-i'),10));
+    }
+  });}
+  var btnBack=document.getElementById('btn-back-emp');
+  if(btnBack){btnBack.addEventListener('click',function(){ showPage('p0'); window.scrollTo(0,0); });}
+  var btnBackList=document.getElementById('btn-back-list');
+  if(btnBackList){btnBackList.addEventListener('click',function(){ showPage('p0'); window.scrollTo(0,0); });}
+  var btnGoScene=document.getElementById('btn-go-scene');
+  if(btnGoScene){btnGoScene.addEventListener('click',function(){
+    showPage('p7');
+    var sc=btnGoScene.getAttribute('data-scene');
+    setTimeout(function(){
+      var t=document.getElementById(sc);
+      if(t) t.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 80);
+  });}
+
+  /* ---- p7 场景导航：锚点跳转 / 返回顶部 ---- */
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    var j = t.closest('[data-jump]');
+    if(j){ var el=document.getElementById(j.getAttribute('data-jump')); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); return; }
+    var tp = t.closest('[data-top]');
+    if(tp){ window.scrollTo({top:0, behavior:'smooth'}); }
+  });
+
+
+
+  /* ---- 告警处理 ---- */
+  var alertPanel=document.querySelector('#p4 .panel');
+  if(alertPanel){alertPanel.addEventListener('click',function(e){
+    var a=e.target.closest?e.target.closest('a[data-act]'):null;
+    if(!a) return;
+    var item=a.closest('.al-item'); if(!item) return;
+    item.classList.add('done'); item.setAttribute('data-state','done');
+    var ra=a.closest('.row-actions'); if(ra) ra.remove();
+    toast(a.getAttribute('data-act')==='handle' ? '【演示】告警已转工单处理' : '【演示】告警已忽略');
+  });}
+
+  /* ---- 模拟实时运行（演示） ---- */
+  var evPool=[
+    '小财 · 智能报销助手 提交报销单 #BX-88218 至汇联易（员工已确认）',
+    '小营 · 菜品调整助手 调整「梅菜扣肉」售价并反馈生效',
+    '小采 · 采购情报助手 生成「牛肉类品牌行情周报」',
+    '小巡 · 门店巡检助手 广州-天河店 12 项监控指标巡检正常',
+    '小稽 · 稽查排班助手 生成 9 月第 4 周稽查排班表',
+    '小营 · 运营日报生成 生成 09-16 门店运营日报',
+    '小账 · 自动对账异常分析 对账 09-16 银行流水（招商）',
+    '小会 · 会员报告生成 生成 9 月会员消费分析报告',
+    '小评 · 服务评价分析 汇总门店服务评价并分析',
+    '小财 · 智能报销助手 物业账单 #BZ-0917 费用转换完成，待确认',
+    '小巡 · 门店巡检助手 门店 #S-018 温度异常，已派发整改',
+    '小营 · 运营日报生成 生成 09-16 采购日报'
+  ];
+  var evI=0, today=663, costToday=308;
+  function pushFeed(){
+    var feed=document.getElementById('live-feed');
+    if(feed){
+      var d=document.createElement('div'); d.className='feed-item';
+      d.innerHTML='<span class="tm">'+nowH()+'</span>'+evPool[evI%evPool.length];
+      feed.insertBefore(d,feed.firstChild);
+      while(feed.children.length>4){feed.removeChild(feed.lastChild);}
+      var lc=document.getElementById('live-count'); if(lc) lc.textContent='今日已执行 '+today.toLocaleString()+' 次';
+      var tr=document.getElementById('kpi-today-runs'); if(tr) tr.textContent=today.toLocaleString();
+      costToday += 0.3 + Math.random()*0.9;
+      var tc=document.getElementById('kpi-today-cost'); if(tc) tc.textContent='¥'+Math.round(costToday);
+    }
+    var log=document.getElementById('mon-log');
+    if(log){
+      today++;
+      var ok=(evI%7!==6);
+      var ev=evPool[evI%evPool.length], sp=ev.indexOf(' '), who=ev.slice(0,sp), task=ev.slice(sp+1);
+      var row=document.createElement('tr');
+      row.innerHTML='<td>'+nowH()+'</td><td>'+who+'</td><td>'+task+'</td><td class="'+(ok?'ok-row':'err-row')+'">'+(ok?'成功':'异常→人工')+'</td><td>'+(1+Math.floor(Math.random()*20)/10).toFixed(1)+'s</td>';
+      log.insertBefore(row,log.firstChild);
+      while(log.children.length>12){log.removeChild(log.lastChild);}
+      var mt=document.getElementById('mon-today'); if(mt) mt.textContent=today.toLocaleString();
+    }
+    var rs=document.getElementById('rs-live');
+    if(rs){
+      var r=evI%5;
+      var rd=document.createElement('div'); rd.className='feed-item';
+      var msg = r===0 ? ('小财 · 智能报销助手 提交报销单 #BX-88'+String(218+evI%40)+' 至汇联易（员工已确认）')
+        : r===1 ? ('小营 · 菜品调整助手 调整「'+(evI%2===0?'藤椒酸菜鱼':'梅菜扣肉')+'」为会员价并反馈生效')
+        : r===2 ? ('小采 · 采购情报助手 更新「'+String(3+evI%3)+' 家供应商」供应情况并汇总')
+        : r===3 ? ('小巡 · 门店巡检助手 巡检 广州-'+(evI%2===0?'天河店':'白云店')+' 监控指标正常')
+        : ('小稽 · 稽查排班助手 排班约束冲突自动调优，待负责人复核');
+      rd.innerHTML='<span class="tm">'+nowH()+'</span>'+msg;
+      rs.insertBefore(rd,rs.firstChild);
+      while(rs.children.length>5){rs.removeChild(rs.lastChild);}
+      var c1=document.getElementById('rs1-count'), c2=document.getElementById('rs2-count'),
+          c3=document.getElementById('rs3-count'), c4=document.getElementById('rs4-count'), c5=document.getElementById('rs5-count');
+      if(c1&&r===0) c1.textContent=(132+Math.floor(evI/5)).toLocaleString();
+      if(c2&&r===1) c2.textContent=(86+Math.floor(evI/5)).toLocaleString();
+      if(c3&&r===2) c3.textContent=(45+Math.floor(evI/5)).toLocaleString();
+      if(c4&&r===3) c4.textContent=(128+Math.floor(evI/5)).toLocaleString();
+      if(c5&&r===4) c5.textContent=(6+Math.floor(evI/5)).toLocaleString();
+      var l1=document.getElementById('rs1-last'), l2=document.getElementById('rs2-last'),
+          l3=document.getElementById('rs3-last'), l4=document.getElementById('rs4-last'), l5=document.getElementById('rs5-last');
+      if(l1&&r===0) l1.textContent=nowH();
+      if(l2&&r===1) l2.textContent=nowH();
+      if(l3&&r===2) l3.textContent=nowH();
+      if(l4&&r===3) l4.textContent=nowH();
+      if(l5&&r===4) l5.textContent=nowH();
+    }
+    var dl=document.getElementById('detail-log');
+    if(dl && window.__curEmp && document.getElementById('p11').classList.contains('on')){
+      var ce=window.__curEmp, nm=ce.name;
+      var taskTpl = nm.indexOf('智能报销助手')>=0
+        ? ['提交报销单 #BX-88'+String(210+evI%60)+' 至汇联易（员工已确认）', '物业账单 #BZ-09'+String(10+evI%18)+' 费用转换完成，待确认']
+        : nm.indexOf('菜品调整')>=0
+          ? ['调整「'+(evI%2===0?'藤椒酸菜鱼':'梅菜扣肉')+'」为会员价并反馈生效', '「蒜蓉粉丝虾」下架申请已提交运营审批']
+          : nm.indexOf('采购情报')>=0
+            ? ['生成「牛肉类品牌行情周报」并推送', '查询 '+(2+evI%3)+' 家供应商供应情况并汇总']
+            : nm.indexOf('门店巡检')>=0
+              ? ['巡检 广州-'+(evI%2===0?'天河店':'白云店')+' 监控指标正常', '门店 #S-0'+String(10+evI%20)+' 异常已派发整改']
+              : nm.indexOf('稽查排班')>=0
+                ? ['生成 9 月第 '+(3+evI%4)+' 周稽查排班表', '排班约束冲突自动调优，待负责人复核']
+                : nm.indexOf('运营日报')>=0
+                  ? ['生成 09-16 门店运营日报', '生成 09-16 采购日报']
+                  : nm.indexOf('自动对账')>=0
+                    ? ['对账 09-16 银行流水（招商）', '流水异常 '+(1+evI%3)+' 笔，已标记待核']
+                    : nm.indexOf('会员报告')>=0
+                      ? ['生成 9 月会员消费分析报告', '汇总会员复购与客单变化']
+                      : nm.indexOf('服务评价')>=0
+                        ? ['汇总门店服务评价并分析', '差评 '+(1+evI%3)+' 条已推送店长跟进']
+                        : ['处理'+ce.dept.split('·')[0]+'任务 #T-'+String(300+evI%900), '生成日报并推送钉钉消息卡片'];
+      var dd=document.createElement('div'); dd.className='feed-item';
+      dd.innerHTML='<span class="tm">'+nowH()+'</span>'+nm+' '+taskTpl[evI%2];
+      dl.insertBefore(dd,dl.firstChild);
+      while(dl.children.length>5){dl.removeChild(dl.lastChild);}
+      var dt=document.getElementById('d-today');
+      if(dt && dt.textContent!=='—'){ var dtn=parseInt(String(dt.textContent).replace(/[^\d]/g,''),10)||0; dt.textContent=(dtn+1).toLocaleString(); }
+      var dl2=document.getElementById('d-last'); if(dl2) dl2.textContent='最近执行 '+nowH();
+    }
+    evI++;
+  }
+  pushFeed();
+  setInterval(pushFeed,6000);
+})();
+</script>
+</body>
+</html>
