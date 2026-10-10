@@ -1,3 +1,5 @@
+> **A10 范围删减（2026-10-10）**：用户取消场景演示。新 Vue UI-F0 与 UI-F1 **不构建** `ScenarioDemoPage.vue`、`ScenarioFlow.vue`、`scenarios.ts`、场景导航及 Agent 关联字段，页面为 p0/p11/p4 三页。**FE-04 / Issue #7 已取消，不属于交付依赖**；原型 HTML 保持只读。此裁决覆盖下文所有旧“4 页/5 场景/FE-04”要求。
+
 # 11｜Vue 工程目录、开发任务与实施顺序
 
 > **确认项：Vue 3 + TypeScript + Vite；严格按原始 HTML 1:1 组件化还原。**
@@ -8,7 +10,7 @@
 
 ## 1. 目标与分阶段边界
 
-**UI-F0（本轮计划）**：构建可独立运行的 Vue Demo，视觉/交互忠实复刻附件；九名员工与五个场景为演示数据，不连接生产。验收包括四页、六图、全部导航、上传预览、告警演示及多视口截图。
+**UI-F0（本轮计划）**：构建可独立运行的 Vue Demo，视觉/交互忠实复刻附件；员工为隔离演示数据、不接生产。验收为**三页（总览/详情/监控）、无场景演示按钮及 p7 路由**、其余现有图表、导航、上传预览、告警演示及多视口截图。
 
 **UI-F1（下一阶段，已收缩）**：同一组件通过正式 Provider 接入**登记 Agent + Agent Run 日志 + 技术指标**，不接业务回执、成本工时、告警写入。参见 [17 最新 MVP](17-agent-log-dashboard-mvp.md)。
 
@@ -46,7 +48,6 @@ digital-workforce-dashboard/
 │   │   ├── pages/
 │   │   │   ├── OverviewPage.vue          # p0
 │   │   │   ├── EmployeeDetailPage.vue    # p11
-│   │   │   ├── ScenarioDemoPage.vue      # p7
 │   │   │   └── MonitoringPage.vue        # p4
 │   │   ├── components/
 │   │   │   ├── KpiCard.vue
@@ -57,7 +58,6 @@ digital-workforce-dashboard/
 │   │   │   ├── ExecutionFeed.vue
 │   │   │   ├── AlertItem.vue
 │   │   │   ├── WorkflowUploader.vue
-│   │   │   ├── ScenarioFlow.vue
 │   │   │   └── DemoBadge.vue
 │   │   ├── charts/
 │   │   │   ├── overviewOptions.ts         # 拷贝原型 3 张图的 ECharts option
@@ -79,7 +79,6 @@ digital-workforce-dashboard/
 │   │   ├── demo/
 │   │   │   ├── employees.ts
 │   │   │   ├── performance.ts
-│   │   │   ├── scenarios.ts
 │   │   │   └── alerts.ts
 │   │   ├── composables/
 │   │   │   ├── useEChart.ts               # mounted/resize/dispose
@@ -122,17 +121,17 @@ digital-workforce-dashboard/
 | 编号 | GitHub | 阶段/优先级 | 交付内容 | 前置依赖 | 粗粒度大小（非工期） |
 | --- | --- | --- | --- | --- | --- |
 | FE-00 | [#2](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/2) | UI-F0 / P0 | Vite 工程、类型检查、包锁定、原型保护 | 无 | S |
-| FE-01 | [#3](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/3) | UI-F0 / P0 | 视觉 token、DashboardShell、4 页路由与 nav 高亮 | FE-00 | M |
-| FE-06 | [#4](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/4) | UI-F0 / P0 | 9 员工/5 场景 Demo 数据、Provider、可控模拟事件 | FE-00 | M |
+| FE-01 | [#3](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/3) | UI-F0 / P0 | 视觉 token、DashboardShell、**3 页路由**与 nav 高亮（不含 p7） | FE-00 | M |
+| FE-06 | [#4](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/4) | UI-F0 / P0 | 9 员工演示资料、Provider、可控模拟事件；**不含五场景或绑定** | FE-00 | M |
 | FE-02 | [#5](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/5) | UI-F0 / P0 | 原型总览、3 图、分部门卡片与实时动态 | FE-01、FE-06 | L |
 | FE-03 | [#6](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/6) | UI-F0 / P0 | 员工详情、3 图、工作流上传预览 | FE-01、FE-06、FE-02 | L |
-| FE-04 | [#7](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/7) | UI-F0 / P0 | 5 个场景及所有锚点跳转 | FE-01、FE-06 | M |
+| ~~FE-04~~ | [#7](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/7) | **已取消** | ~~5 个场景及所有锚点跳转~~；用户决定不实施 | — | — |
 | FE-05 | [#8](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/8) | UI-F0 / P0 | 监控、告警演示、执行流水 | FE-01、FE-06 | M |
-| FE-07 | [#9](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/9) | UI-F0 / P0 | Playwright/Vitest、跨视口截图、CI 质量门禁 | FE-01～FE-06 | L |
+| FE-07 | [#9](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/9) | UI-F0 / P0 | Playwright/Vitest、跨视口截图、CI 质量门禁 | FE-01、FE-02、FE-03、FE-05、FE-06（FE-04 取消） | L |
 | FE-08 | [#10](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/10) | UI-F0 / P0 | Demo 构建预览、README、差异说明、验收材料 | FE-07 | S |
 | FE-09 | [#11](https://github.com/jackson-heylion/digital-workforce-dashboard/issues/11) | UI-F1 / P1 | **正式 Agent 目录/Run 日志/技术指标 Provider** | FE-07、BE-A/BE-B/BE-C | M |
 
-**排序说明**：FE-06 是编号较靠后但可在 FE-01 期间并行执行的**基础数据任务**；不要误以为需要做完 FE-05 才能开始它。FE-02/03/04/05 视开发资源可并行。最关键的完成顺序为：
+**排序说明**：FE-06 是编号较靠后但可在 FE-01 期间并行执行的**基础数据任务**；不要误以为需要做完 FE-05 才能开始它。FE-02/03/05 视开发资源可并行（FE-04 已取消）。最关键的完成顺序为：
 
 ```mermaid
 flowchart TD
@@ -140,8 +139,6 @@ flowchart TD
   A --> C["FE-06 Demo Provider"]
   B --> D["FE-02 总览"]
   C --> D
-  B --> E["FE-04 五场景"]
-  C --> E
   B --> F["FE-05 监控"]
   C --> F
   D --> G["FE-03 员工详情"]
@@ -166,7 +163,7 @@ flowchart TD
 | --- | --- | --- |
 | M0 工程可运行 | Vue 项目可安装/启动/构建；基线文件未变 | #2 |
 | M1 公共框架/数据可用 | 公共样式、路由、Demo 数据服务可演示 | #3、#4 |
-| M2 四页功能复刻 | 总览、详情、五场景、监控交互齐全 | #5、#6、#7、#8 |
+| M2 三页功能复刻 | 总览、详情、监控交互齐全；无场景演示页与入口 | #5、#6、#8（#7 已取消） |
 | M3 UI-F0 可验收 | 所有 viewport 截图、交互测试与质量门禁通过；Demo 可独立访问 | #9、#10 |
 | M4 UI-F1 正式数据 | Agent CRUD/Run 日志采集和看板查询贯通，真实 Run 统计、技术成功率和平均耗时与明细一致；Demo 隔离 | #11～#14 |
 
