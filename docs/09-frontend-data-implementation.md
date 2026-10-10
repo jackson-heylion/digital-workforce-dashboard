@@ -1,5 +1,8 @@
 # 09｜从 HTML 原型到管理层看板：前端架构与数据接入实施讨论
 
+> **历史方案，已退出 2026-10-10 确认的 MVP 范围。** 用户明确要求系统只做**Agent 登记、Agent Run 日志采集、看板展示**；本文关于业务 Task/Outcome、Connector 管理、审批/能力绑定、财务工时/ROI、五场景源业务对账或管理层 KPI 重排的建议**均不可当成本期开发需求或验收项**。请以 [17 最新 MVP 规格](17-agent-log-dashboard-mvp.md) 为准；原始 HTML 的 UI-F0 视觉复刻仍保持。
+
+
 > **状态：前端技术选型已确认（2026-10-10）；具体实现细节与生产接入仍需研发评审。** 参见 [ADR-001](10-frontend-adr.md)、[工程任务清单](11-frontend-backlog.md)。
 >
 > **已确认**：首期集团管理层优先；`prototype/index.html` 必须保留，作为第一轮 UI 的布局/交互验收基准。详见 [08 UI 复刻规范](08-ui-reproduction.md)。
