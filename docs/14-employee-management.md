@@ -1,5 +1,8 @@
 # 14｜数字员工管理中心：资产模型、生命周期与权限（讨论稿）
 
+> **历史方案，已退出 2026-10-10 确认的 MVP 范围。** 用户明确要求系统只做**Agent 登记、Agent Run 日志采集、看板展示**；本文关于业务 Task/Outcome、Connector 管理、审批/能力绑定、财务工时/ROI、五场景源业务对账或管理层 KPI 重排的建议**均不可当成本期开发需求或验收项**。请以 [17 最新 MVP 规格](17-agent-log-dashboard-mvp.md) 为准；原始 HTML 的 UI-F0 视觉复刻仍保持。
+
+
 > **本文件为方案建议，不是项目发起人已确认的数字员工管理规则。** 已确认的只有：集团管理层优先、基于原始 HTML 1:1 复刻、前端 Vue 3 + TypeScript + Vite。管理后台的具体字段、审核要求与 UI 入口均待讨论。
 >
 > 原型依据：[prototype/index.html](../prototype/index.html) 中“按部门一览”9 个示例员工、5 个场景、“运行与绩效”详情及本地工作流上传。原型显示的真实在用/运行中/审批已定稿均属于原型声明，不能直接导入为生产真值。相邻文档：[PRD](02-product-prd.md)、[指标契约](04-metrics-and-contracts.md)、[数据接入讨论](15-data-integration.md)。
