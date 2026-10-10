@@ -11,6 +11,7 @@
 | **D11** | 正式前端 **Vue 3 + TypeScript + Vite** | 用户，2026-10-10 | 独立 frontend/，Demo 与正式 Provider 分离 |
 | **D12** | **极简 MVP：登记 Agent、采集 Agent 日志、展示看板** | 用户，2026-10-10 | 复杂员工治理、源业务结果回执/对账、节省工时、ROI、自动编排都退出首期 |
 | **D13** | **在 Agent 调用处增加统一 HTTP 上报接口** | 用户，2026-10-10 | 遵循 [18 Agent Run 标准 v1](18-agent-run-reporting-standard.md)，不用先建平台日志拉取或通用连接器 |
+| **D14（要求）** | **考虑性能、可扩展性、可迁移性，并覆盖更多原型指标** | 用户，2026-10-10 | [19 原型审计](19-prototype-metrics-coverage-audit.md) + [20 非功能设计](20-performance-extensibility-portability.md)；[v1.1 扩展协议](../openapi/agent-run-reporting-v1.1-draft.json)仍是待评审草案 |
 
 **范围解释建议**：一 Agent 登记 = 一数字员工卡；执行一次 = 一条唯一 Agent Run；Run 成功 ≠ 业务成功。这个简化口径可在获取第一批真实日志样本后做字段级细化。
 
@@ -24,6 +25,10 @@
 | UI-F1 实际看板 | Agent 列表、Run/成功率/耗时、趋势、排行与详情，替换 Demo | 同时间窗指标能对齐；无日志显示无数据；真实 Run 不与 Demo 混算 |
 
 **最小后端建议**：一个服务 + MySQL；视实际 Agent 平台能力决定由调用方上报还是单个只读日志适配。没有理由首期建通用 Connector 管理门户和多服务基础设施。
+
+## 2.1 负载、扩展与迁移验收建议（尚未实测）
+
+按 [20 号架构设计](20-performance-extensibility-portability.md)对写入吞吐、读写混合、高并发幂等、端到端采集延迟、数据保留和跨数据库/平台兼容制定测试。**先同步写入 MySQL + 页面查询，后在确有压力时启用日聚合/持久化队列**；不得以“预留扩展”为由让 MVP 实际依赖 Kafka/Flink/Doris。
 
 ## 3. MVP 验收
 
