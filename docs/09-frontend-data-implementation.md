@@ -1,4 +1,4 @@
-> **B10 已确认的正式看板数据边界（2026-10-11）**：今日技术 Run 次数以**服务端 B01 去重聚合**为权威，正式 Provider **自动刷新读取服务端快照**，绝不将模拟 DemoTicker、B06 动态文本数量、RUNNING→终态或重传事件用来本地加一。旧文「生产低频刷新」「轮询/SSE」仅为历史方案，**未批准具体轮询频率、SSE/WebSocket、缓存水位、查询失败、页面重新挂载去重、延迟/时区/权限/审计**。详见 [21 台账](21-metrics-field-confirmation-register.md)。
+> **B10 方案 A 已确认的正式看板数据边界（2026-10-11）**：今日技术 Run 次数以**服务端 B01 去重聚合**为权威，正式 Provider **自动刷新读取服务端快照**，绝不将模拟 DemoTicker、B06 动态文本数量、RUNNING→终态或重传事件用来本地加一。旧文「生产低频刷新」「轮询/SSE」仅为历史方案，**未批准具体轮询频率、SSE/WebSocket、缓存水位、查询失败、页面重新挂载去重、延迟/时区/权限/审计**。详见 [21 台账](21-metrics-field-confirmation-register.md)。 下一项 **B11 全集团历史累计运行量**另行讨论；本 B10 自动刷新不确认历史全量统计。
 
 > **A10 最新用户裁决（2026-10-10）**：场景演示整体取消；以下原型拆解仅用于历史了解。新 Vue UI-F0/UI-F1 不建设 `p7`、`ScenarioDemoPage`、场景演示入口、五场景静态流程/绑定；只做 p0/p11/p4 三页，其余原型视觉继续参考，原始 HTML 不改。以 [21 决策台账](21-metrics-field-confirmation-register.md) 和 [17 MVP](17-agent-log-dashboard-mvp.md) 为准。
 
